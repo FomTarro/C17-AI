@@ -20,8 +20,10 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _map = _map.split('\n');
   _mapStr = _map;
   _map = InitBoard(_map);
-  PrintBoard(_map)
+  //PrintBoard(_map)
+  //console.log(_map[2][3]);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
+  AStarPath(_map[2][2], _map[0][1]);
 });
 
 function PrintBoard(board){
@@ -82,7 +84,8 @@ function Cell(x, y, complexity) {
 // generate an Astar path
 function AStarPath(start, goal){
     var success = Search(start, goal);
-    var plannedPath = {};
+    console.log(success);
+    var plannedPath = [];
     if(success){
         var node = goal;
         plannedPath.add(node);
@@ -90,7 +93,9 @@ function AStarPath(start, goal){
     }
 
     plannedPath.reverse();
-
+    for(var i = 0; i < plannedPath.length; i++) {
+        console.log(plannedPath[i]);
+    }
     return plannedPath;
 }
 
@@ -98,14 +103,15 @@ function AStarPath(start, goal){
 function Search(start, goal)
 {
     // Already evaluated nodes go here
-    var _closedSet = {};
+    var _closedSet = [];
     // Currently discovered nodes that are also evaluated
-    var _openSet = {start};
+    var _openSet = [start];
 
     start.G = 0;
 
     while(_openSet.length > 0)
     {
+        console.log(_openSet.length);
         // sort list by lowest f-score
         _openSet.sort(
             function (node1, node2) 
@@ -122,10 +128,10 @@ function Search(start, goal)
             // construct a path and exit this function
             return true;
         }
-        _openSet.remove(current);
-        _closedSet.add(current);
+        _openSet.splice(_openSet.indexOf(current), 1);
+        _closedSet.push(current);
 
-        var neighbors = GetAdjacentCoordinates(current, _map.width, _map.height);
+        var neighbors = GetAdjacentCoordinates(current, _map[0].length, _map.length);
         for(var i = 0; i < neighbors.length; i++){
             var neighborNode; // set this to neighbors[i].x, neighbors[i].y from the map structure
 
@@ -136,9 +142,9 @@ function Search(start, goal)
             // this would be where to insert heuristics
             var gTemp = current.G + 1;
 
-            if(!_openSet.contains(neighborNode)) // discover a new node
+            if(!_openSet.includes(neighborNode)) // discover a new node
             {
-                _openSet.add(neighborNode);
+                _openSet.push(neighborNode);
             }
             else if(gTemp >= neighborNode.G) // this is not a better path
             {
@@ -149,15 +155,15 @@ function Search(start, goal)
             neighborNode.parentNode = current;
             neighborNode.G = gTemp;
         }
-
-        return false;
     }
+    return false;
+}
 
 // Pass in a node and the extremes of the map, gets all valid adjacent coordinates. 
 // Assumes minimum bounds are zero. 
 // MIGHT NEED TO FILTER OUT DIAGONALS?
 function GetAdjacentCoordinates(node, maxWidth, maxHeight){
-    var coordList = {};
+    var coordList = [];
     for(var x = -1; x <= 1; x++)
     {
          for(var y = -1; y <= 1; y++)
@@ -170,11 +176,10 @@ function GetAdjacentCoordinates(node, maxWidth, maxHeight){
                  var coord = new Object();
                  coord.x = xCoord;
                  coord.y = yCoord;
-                 coordList.add(coord);
+                 coordList.push(coord);
              }
          }
     }
+    console.log(coordList);
     return coordList;
-}
-
 }
