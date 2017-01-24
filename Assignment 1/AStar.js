@@ -1,3 +1,4 @@
+
 /*
 a Node needs the folowing properties:
 
@@ -8,6 +9,32 @@ parentNode;
 
 
 */
+
+function Cell(x, y, complexity) {
+    this.x = x;
+    this.y = y;
+    this.G = Number.MAX_VALUE;
+    this.H = 0;
+    this.F = this.G + this.H;
+    this.parentNode = undefined;
+
+    //Check if complexity is valid
+    if(complexity == typeof(string)) {
+        if(complexity != '#' || complexity != 'G' || complexity != 'S') {
+            complexity = parseInt(complexity);
+        }   
+    }
+    if(complexity < 1 || complexity > 9) {
+        throw new Error("Cell_constructor: Invalid cell complexity " + complexity);
+    }
+    else {
+        this.complexity = complexity;
+    }
+
+    return this;
+}
+
+console.log(new Cell(0, 0, "#"));
 
 // TODO: some sort of persistent node grid stored here;
 // ideally a 2d array of x, y coordinates
@@ -36,7 +63,7 @@ function Search(start, goal)
     // Currently discovered nodes that are also evaluated
     var _openSet = {start};
 
-    start.g = 0;
+    start.G = 0;
 
     while(_openSet.length > 0)
     {
@@ -68,7 +95,7 @@ function Search(start, goal)
 
             // assumes cost between each tile is just 1
             // this would be where to insert heuristics
-            var gTemp = current.g + 1;
+            var gTemp = current.G + 1;
 
             if(!_openSet.contains(neighborNode)) // discover a new node
             {
