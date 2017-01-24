@@ -1,3 +1,51 @@
+var fs = require('fs');
+
+//stops the program if the board file isn't included
+if (process.argv.length !== 3) {
+    console.error('Exactly one argument required');
+    process.exit(1);
+}
+
+var _mapFile = process.argv[2];
+
+// TODO: some sort of persistent node grid stored here;
+// ideally a 2d array of x, y coordinates
+var _mapStr;
+var _map = {};
+
+fs.readFile(_mapFile, 'utf-8', function (err, data){
+  if (err) throw err;
+  _map = data.replace(/[	]/g, '');
+  _map = _map.replace(/[\r]/g, '');
+  _map = _map.split('\n');
+  _mapStr = _map;
+  _map = InitBoard(_map);
+  PrintBoard(_map)
+  //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
+});
+
+function PrintBoard(board){
+    var printed = board.map(function(row) {
+        return row.map(function(cell) {
+            return cell.complexity;
+        })
+    });
+    console.log(printed);
+}
+
+//Add cells to board
+function InitBoard(oldBoard) {
+    var newBoard = [];
+	oldBoard.forEach(function(d, rowNum) {
+        newBoard[rowNum] = [];
+        for(var colNum = 0; colNum < d.length; colNum++) {
+            var val = d.charAt(colNum);
+            newBoard[rowNum][colNum] = new Cell(rowNum, colNum, val);
+        }
+    });
+    return newBoard;
+}
+
 /*
 a Node needs the folowing properties:
 
@@ -5,13 +53,31 @@ G (intitially infinity)
 H (heuristic)
 F = (g + h) = cost
 parentNode;
-
-
 */
+function Cell(x, y, complexity) {
+    this.x = x;
+    this.y = y;
+    this.G = Number.MAX_VALUE;
+    this.H = 0;
+    this.F = this.G + this.H;
+    this.parentNode = undefined;
 
-// TODO: some sort of persistent node grid stored here;
-// ideally a 2d array of x, y coordinates
-var _map = {};
+    //Check if complexity is valid
+    if(complexity == typeof(string)) {
+        if(complexity != '#' || complexity != 'G' || complexity != 'S') {
+            complexity = parseInt(complexity);
+        }   
+    }
+    if(complexity < 1 || complexity > 9) {
+        throw new Error("Cell_constructor: Invalid cell complexity " + complexity);
+        process.exit(1);
+    }
+    else {
+        this.complexity = complexity;
+    }
+
+    return this;
+}
 
 // generate an Astar path
 function AStarPath(start, goal){
@@ -36,7 +102,7 @@ function Search(start, goal)
     // Currently discovered nodes that are also evaluated
     var _openSet = {start};
 
-    start.g = 0;
+    start.G = 0;
 
     while(_openSet.length > 0)
     {
@@ -68,7 +134,7 @@ function Search(start, goal)
 
             // assumes cost between each tile is just 1
             // this would be where to insert heuristics
-            var gTemp = current.g + 1;
+            var gTemp = current.G + 1;
 
             if(!_openSet.contains(neighborNode)) // discover a new node
             {
