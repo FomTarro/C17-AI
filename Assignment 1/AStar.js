@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 var fs = require('fs');
 
 //stops the program if the board file isn't included
@@ -21,8 +20,7 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _map = _map.split('\n');
   _mapStr = _map;
   _map = InitBoard(_map);
-  //PrintBoard(_map)
-  //console.log(_map[2][3]);
+  PrintBoard(_map)
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_map[2][2], _map[0][1]);
 });
@@ -49,6 +47,13 @@ function InitBoard(oldBoard) {
     return newBoard;
 }
 
+function PrintPath(path) {
+    var printed = path.map(function(cell){
+        return (cell.x + " " + cell.y);
+    });
+    console.log(printed);
+}
+
 /*
 a Node needs the folowing properties:
 
@@ -57,8 +62,6 @@ H (heuristic)
 F = (g + h) = cost
 parentNode;
 */
-=======
->>>>>>> 560e6d3431c6082e8cdf8892e5dece167604fa69
 function Cell(x, y, complexity) {
     this.x = x;
     this.y = y;
@@ -69,6 +72,7 @@ function Cell(x, y, complexity) {
      // For each node, the total cost of getting from the start node to the goal
     this.F = this.G + this.H;
     this.parentNode = undefined;
+    this.eval = "";
 
     //Check if complexity is valid
     if(complexity == typeof(string)) {
@@ -90,18 +94,17 @@ function Cell(x, y, complexity) {
 // generate an Astar path
 function AStarPath(start, goal){
     var success = Search(start, goal);
-    console.log(success);
     var plannedPath = [];
     if(success){
         var node = goal;
-        plannedPath.add(node);
-        node = node.parentNode;
+        while(node != start) {
+            plannedPath.push(node);
+            node = node.parentNode;
+        }
     }
 
     plannedPath.reverse();
-    for(var i = 0; i < plannedPath.length; i++) {
-        console.log(plannedPath[i]);
-    }
+    PrintPath(plannedPath);
     return plannedPath;
 }
 
@@ -119,7 +122,6 @@ function Search(start, goal)
 
     while(openSet.length > 0)
     {
-        console.log(_openSet.length);
         // sort list by lowest f-score
         openSet.sort(
             function (node1, node2) 
@@ -136,7 +138,7 @@ function Search(start, goal)
             return true;
         }
 
-        openSet.splice(_openSet.indexOf(current), 1);
+        openSet.splice(openSet.indexOf(current), 1);
         closedSet.push(current);
 
         var neighbors = GetAdjacentCoordinates(current, _map);
@@ -144,10 +146,10 @@ function Search(start, goal)
             var neighborNode = neighbors[i];
 
             // TODO: factor in turning costs
-            if(neighbors[neighborNode] == "neighbor"){
+            if(neighborNode.eval == "neighbor"){
         
             } // factor in the additional cost of leaping
-            else if(neighbors[neighborNode] == "leap"){
+            else if(neighborNode.eval == "leap"){
                 
             }
             // check if node with these coordinates exists in the closed set
@@ -176,12 +178,13 @@ function Search(start, goal)
 // Pass in a node and the extremes of the map, gets all valid adjacent coordinates. 
 // Assumes minimum bounds are zero. 
 function GetAdjacentCoordinates(node, map){
-    var maxWidth = map[0].length;
-    var maxHeight = map.length;
+    var maxWidth = map.length;
+    var maxHeight = map[0].length;
     var nodeList = [];
-    for(var x = -1; x <= 1; x+=2)
+
+    for(var x = -1; x <= 1; x++)
     {
-         for(var y = -1; y <= 1; y+=2)
+         for(var y = -1; y <= 1; y++)
          {
              var xCoord = (node.x + x);
              var xLeapCoord = (node.x + (3*x));
@@ -190,15 +193,17 @@ function GetAdjacentCoordinates(node, map){
 
              var neighbor;
              // if the new coordinates are within map bounds, and not equal to the node itself
-             if((xCoord <= maxWidth && xCoord >= 0) && (yCoord <= maxHeight && yCoord > 0) 
+             if((xCoord < maxWidth && xCoord >= 0) && (yCoord < maxHeight && yCoord > 0) 
              && !(x == 0 && y == 0)){
-                 neighbor = map[x][y];
-                 nodeList[coord] = "neighbor";
+                 neighbor = map[xCoord][yCoord];
+                 neighbor.eval = "neighbor";
+                 nodeList.push(neighbor);
              }
-             else if((xLeapCoord <= maxWidth && xLeapCoord >= 0) && (yLeapCoord <= maxHeight && yLeapCoord > 0) 
+             if((xLeapCoord < maxWidth && xLeapCoord >= 0) && (yLeapCoord < maxHeight && yLeapCoord > 0) 
              && !(x == 0 && y == 0)){
-                 neighbor = map[x][y];
-                 nodeList[coord] = "leap";
+                 neighbor = map[xLeapCoord][yLeapCoord];
+                 neighbor.eval = "leap";
+                 nodeList.push(neighbor);
              }
          }
     }
