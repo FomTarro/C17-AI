@@ -1,9 +1,15 @@
 /*
 a Node needs the folowing properties:
 
+// For each node, the cost of getting from the start node to that node.
 G (intitially infinity)
+
 H (heuristic)
+
+    // For each node, the total cost of getting from the start node to the goal
 F = (g + h) = cost
+
+
 parentNode;
 
 
