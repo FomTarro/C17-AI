@@ -20,7 +20,8 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _map = _map.split('\n');
   _mapStr = _map;
   _map = InitBoard(_map);
-  PrintBoard(_map)
+  PrintBoard(_map);
+  EvaluateHeuristic(_map,  _map[0][1]);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_map[2][2], _map[0][1]);
 });
@@ -45,6 +46,16 @@ function InitBoard(oldBoard) {
         }
     });
     return newBoard;
+}
+
+function EvaluateHeuristic(map, goal){
+    for(var i = 0; i < map.length; i++){
+        for(var j = 0; j < map[0].length; j++){
+            map[i][j].H = Math.abs(i - goal.x) + Math.abs(j - goal.y); 
+            //console.log(map[i][j].H);
+        }
+    }
+
 }
 
 function PrintPath(path) {
@@ -129,14 +140,12 @@ function Search(start, goal)
                 return node1.F - node2.F;
             }
         );
+
         // investigate lowest f-score first
         var current = openSet[0];
 
         if(current == goal)
-        {
-            // exit this function which triggers path construction
             return true;
-        }
 
         openSet.splice(openSet.indexOf(current), 1);
         closedSet.push(current);
@@ -144,6 +153,9 @@ function Search(start, goal)
         var neighbors = GetAdjacentCoordinates(current, _map);
         for(var i = 0; i < neighbors.length; i++){
             var neighborNode = neighbors[i];
+
+            if(closedSet.includes(neighborNode))
+                continue;
 
             // TODO: factor in turning costs
             if(neighborNode.eval == "neighbor"){
@@ -159,13 +171,9 @@ function Search(start, goal)
             var gTemp = current.G + 1;
 
             if(!openSet.includes(neighborNode)) // discover a new node
-            {
                 openSet.push(neighborNode);
-            }
             else if(gTemp >= neighborNode.G) // this is not a better path
-            {
                 continue;
-            }
 
             // this is the best path until now, so record itself
             neighborNode.parentNode = current;
@@ -188,28 +196,27 @@ function GetAdjacentCoordinates(node, map){
          {
              var xCoord = (node.x + x);
              var xLeapCoord = (node.x + (3*x));
+
              var yCoord = (node.y + y);
-             var yLeapCoord = (node.y + (3 *y));
+             var yLeapCoord = (node.y + (3*y));
 
              var neighbor;
              // if the new coordinates are within map bounds, and not equal to the node itself
-             if((xCoord < maxWidth && xCoord >= 0) && (yCoord < maxHeight && yCoord > 0) 
-             && !(x == 0 && y == 0)){
+             if((xCoord < maxWidth && xCoord >= 0) && (yCoord < maxHeight && yCoord >= 0) 
+             && !(x == 0 && y == 0) && ((Math.abs(x) + Math.abs(y)) != 2)){
                  neighbor = map[xCoord][yCoord];
                  neighbor.eval = "neighbor";
                  nodeList.push(neighbor);
              }
+             /*
              if((xLeapCoord < maxWidth && xLeapCoord >= 0) && (yLeapCoord < maxHeight && yLeapCoord > 0) 
              && !(x == 0 && y == 0)){
                  neighbor = map[xLeapCoord][yLeapCoord];
                  neighbor.eval = "leap";
                  nodeList.push(neighbor);
              }
+             */
          }
     }
     return nodeList;
-}
-
-function EvaluateHeuristic(node, goal){
-
 }
