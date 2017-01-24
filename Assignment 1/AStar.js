@@ -1,21 +1,3 @@
-
-/*
-a Node needs the folowing properties:
-
-// For each node, the cost of getting from the start node to that node.
-G (intitially infinity)
-
-H (heuristic)
-
-    // For each node, the total cost of getting from the start node to the goal
-F = (g + h) = cost
-
-
-parentNode;
-
-
-*/
-
 function Cell(x, y, complexity) {
     this.x = x;
     this.y = y;
@@ -74,7 +56,7 @@ function Search(start, goal)
 
     start.G = 0;
 
-    var facingDir
+    var facingDir = 0;
 
     while(openSet.length > 0)
     {
@@ -85,13 +67,12 @@ function Search(start, goal)
                 return node1.F - node2.F;
             }
         );
-
         // investigate lowest f-score first
         var current = openSet[0];
 
         if(current == goal)
         {
-            // construct a path and exit this function
+            // exit this function which triggers path construction
             return true;
         }
         openSet.remove(current);
@@ -99,7 +80,7 @@ function Search(start, goal)
 
         var neighbors = GetAdjacentCoordinates(current, _map.width, _map.height);
         for(var i = 0; i < neighbors.length; i++){
-            var neighborNode; // set this to neighbors[i].x, neighbors[i].y from the map structure
+            var neighborNode = neighbors[i];
 
             // TODO: factor in turning costs
             if(neighbors[neighborNode] == "neighbor"){
@@ -127,9 +108,8 @@ function Search(start, goal)
             neighborNode.parentNode = current;
             neighborNode.G = gTemp;
         }
-
-        return false;
     }
+    return false;
 }
 
 // Pass in a node and the extremes of the map, gets all valid adjacent coordinates. 
