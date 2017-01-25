@@ -24,10 +24,13 @@ for(var i = 0; i < boardHeight; i++){
 			row = row + '\t';
 		row = row + Math.floor((Math.random() * 9) + 1).toString();
 	}
-	newBoard[i] = row;
+	if(i == boardHeight - 1)
+		newBoard[i] = row;
+	else
+		newBoard[i] = row + '\r' + '\n';
 }
 
 console.log(newBoard);
-/*fs.writeFile('random.txt', newBoard, function (err) {
+fs.writeFile('random.txt', newBoard.toString().replace(/[,]/g,''), function (err) {
         if (err) throw err;
-});*/
+});
