@@ -22,7 +22,16 @@ for(var i = 0; i < boardHeight; i++){
 	for(var j = 0; j < boardWidth; j++){
 		if(j != 0)
 			row = row + '\t';
-		row = row + Math.floor((Math.random() * 9) + 1).toString();
+		if(i == goalY && j == goalX)
+			row = row + 'G';
+		else if(i == startY && j == startX)
+			row = row + 'S';
+		else{
+			if(Math.random() <= .1)
+				row = row + '#';	
+			else
+				row = row + Math.floor((Math.random() * 9) + 1).toString();	
+		}
 	}
 	if(i == boardHeight - 1)
 		newBoard[i] = row;
@@ -30,7 +39,13 @@ for(var i = 0; i < boardHeight; i++){
 		newBoard[i] = row + '\r' + '\n';
 }
 
-console.log(newBoard);
+console.log('Preview:');
+var preview = newBoard.toString().replace(/[	]/g, '');
+preview = preview.replace(/[\r]/g, '');
+preview = preview.split('\n');
+preview.forEach(function(d) {
+    	console.log('[' + d.replace(/[,]/g,'') + ']');
+});
 fs.writeFile('random.txt', newBoard.toString().replace(/[,]/g,''), function (err) {
         if (err) throw err;
 });
