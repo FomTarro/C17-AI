@@ -21,9 +21,9 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _mapStr = _map;
   _map = InitBoard(_map);
   PrintBoard(_map);
-  EvaluateHeuristic(_map,  _map[0][1]);
+  EvaluateHeuristic(_map,  GetGoal(_map));
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
-  AStarPath(_map[2][2], _map[0][1]);
+  AStarPath(GetStart(_map), GetGoal(_map));
 });
 
 function PrintBoard(board){
@@ -56,6 +56,34 @@ function EvaluateHeuristic(map, goal){
         }
     }
 
+}
+
+function GetStart(map) {
+    var start;
+    map.forEach(function(row){
+        var result = row.filter(function(cell){
+            return cell.complexity == "S"; 
+        });
+        if(result.length != 0) start = result[0];
+    })
+    if(start == undefined)
+        throw new Error("Cannot find start cell");
+    else
+        return start;
+}
+
+function GetGoal(map) {
+    var goal;
+    map.forEach(function(row){
+        var result = row.filter(function(cell){
+            return cell.complexity == "G"; 
+        });
+        if(result.length != 0) goal = result[0];
+    })
+    if(goal == undefined)
+        throw new Error("Cannot find goal cell");
+    else
+        return goal;
 }
 
 function PrintPath(path) {
