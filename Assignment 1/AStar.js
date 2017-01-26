@@ -63,7 +63,7 @@ if(process.argv[2] == 'random'){
 }
 
 var _mapFile = process.argv[2];
-var heuristicValue = process.argv[3];
+var _heuristicValue = process.argv[3];
 
 // TODO: some sort of persistent node grid stored here;
 // ideally a 2d array of x, y coordinates
@@ -81,7 +81,7 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _mapStr = _map;
   _map = InitBoard(_map);
   PrintBoard(_map);
-  EvaluateHeuristic(_map, _goal);
+  EvaluateHeuristic(_map, _goal, _heuristicValue);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_start, _goal);
 });
@@ -116,43 +116,6 @@ function InitBoard(oldBoard) {
     return newBoard;
 }
 
-function PrintPath(path) {
-    var printed = path.map(function(cell){
-        return (cell.x + " " + cell.y);
-    });
-    console.log(printed);
-}
-
-
-/*
-function GetStart(map) {
-    var start;
-    map.forEach(function(row){
-        var result = row.filter(function(cell){
-            return cell.complexity == "S"; 
-        });
-        if(result.length != 0) start = result[0];
-    })
-    if(start == undefined)
-        throw new Error("Cannot find start cell");
-    else
-        return start;
-}
-
-function GetGoal(map) {
-    var goal;
-    map.forEach(function(row){
-        var result = row.filter(function(cell){
-            return cell.complexity == "G"; 
-        });
-        if(result.length != 0) goal = result[0];
-    })
-    if(goal == undefined)
-        throw new Error("Cannot find goal cell");
-    else
-        return goal;
-}
-*/
 
 function Cell(x, y, complexity) {
     this.x = x;
@@ -192,11 +155,18 @@ function Cell(x, y, complexity) {
 }
 
 
-function EvaluateHeuristic(map, goal){
+function EvaluateHeuristic(map, goal, heuristic){
     for(var i = 0; i < map.length; i++){
         for(var j = 0; j < map[0].length; j++){
-            map[i][j].H = Math.abs(i - goal.x) + Math.abs(j - goal.y); 
-            map[i][j].ReevaluateF();
+            if(heuristic == 1)
+            {
+                map[i][j].H = Math.abs(i - goal.x) + Math.abs(j - goal.y); 
+                map[i][j].ReevaluateF();
+            }
+            else if(heuristic == 2)
+            {
+                
+            }
         }
     }
 
@@ -204,7 +174,7 @@ function EvaluateHeuristic(map, goal){
 
 function PrintPath(path) {
     var printed = path.map(function(cell){
-        return (cell.x + " " + cell.y + " (" + cell.G + ")");
+        return (cell.x + ", " + cell.y + " (Cost: " + cell.G + ")");
     });
     console.log(printed);
 }
@@ -239,7 +209,7 @@ function Search(start, goal)
 
     start.G = 0;
 
-    var facingDir = 0;
+    var facingDir = "North"
 
     while(openSet.length > 0)
     {
@@ -268,11 +238,19 @@ function Search(start, goal)
             // if so, continue
             if(closedSet.includes(neighborNode))
                 continue;
+
+            // turning check here!
+            var turnCost = 0;
+            if(current.parentNode != undefined && (GetHeading(current.parentNode, current) != GetHeading(current, neighborNode)))
+            {
+                console.log("TURNING!");
+                turnCost = CalculateTurnCost(neighborNode);
+            }
             if(neighborNode.eval == "neighbor"){
-                var gTemp = current.G + parseInt(neighborNode.complexity);
+                var gTemp = current.G + turnCost + parseInt(neighborNode.complexity);
             } // factor in the additional cost of leaping
             else if(neighborNode.eval == "leap"){
-                 var gTemp = current.G + 20;
+                 var gTemp = current.G + turnCost + 20;
             }
 
             if(!openSet.includes(neighborNode)) // discover a new node
@@ -281,6 +259,9 @@ function Search(start, goal)
                 continue;
 
             // this is the best path until now, so record itself
+
+            
+
             neighborNode.parentNode = current;
             neighborNode.G = gTemp;
             neighborNode.ReevaluateF();
@@ -289,6 +270,28 @@ function Search(start, goal)
 
     // no path could be found
     return false;
+}
+
+function CalculateTurnCost(node)
+{
+    return Math.ceil(node.complexity/3);
+}
+
+function GetHeading(from, to){
+    var heading;
+    if(from.x - to.x < 0){
+        heading = "East";
+    }
+    else if(from.x - to.x > 0){
+        heading = "West";
+    }
+    else if(from.y - to.y < 0){
+        heading = "North";
+    }
+    else if(from.y - to.y > 0){
+        heading = "South";
+    }
+    return heading;
 }
 
 // Pass in a node and the extremes of the map, gets all valid adjacent coordinates. 
