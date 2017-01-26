@@ -75,6 +75,8 @@ var actionLog = [];
 //the current action step
 var actionStep = 0;
 
+var nodesExpanded = 0;
+
 var robotX;
 var robotY;
 var robotDir = 0;//(0 = north, 1 = west, 2 = south, 3 = east)
@@ -104,6 +106,9 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   	console.log('Score: 0');
   	
   console.log('Actions taken: ' + actionLog.length);
+  
+  console.log('Number of Nodes Expanded: ' + nodesExpanded);
+  
   PrintActionLog();
 });
 
@@ -392,6 +397,7 @@ function Search(start, goal)
 
         openSet.splice(openSet.indexOf(current), 1);
         closedSet.push(current);
+        nodesExpanded++;
 
         var neighbors = GetAdjacentCoordinates(current, _map);
         for(var i = 0; i < neighbors.length; i++)
