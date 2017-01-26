@@ -6,7 +6,7 @@ if (process.argv.length !== 3) {
     process.exit(1);
 }
 
-//generates a random board in random.txt is the passed in argument is 'random'
+//generates a random board in random.txt is the passed in argument is 'random' this also exits the program
 if(process.argv[2] == 'random'){
 	var newBoard = [];
 	
