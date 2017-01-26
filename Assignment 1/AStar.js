@@ -73,6 +73,17 @@ if(process.argv[2] == 'random'){
 var _mapStr;
 var _map = {};
 
+//array of strings representing the list of actions took to reach the goal
+var actionLog = [];
+//the current action step
+var actionStep = 0;
+
+var nodesExpanded = 0;
+
+var robotX;
+var robotY;
+var robotDir = 0;//(0 = north, 1 = west, 2 = south, 3 = east)
+
 var _start;
 var _goal;
 
@@ -86,21 +97,49 @@ function PerformAStar() {
         _map = _map.replace(/[\r]/g, '');
         _map = _map.split('\n');
         _mapStr = _map;
+        
+        // _map.forEach(function(d) {
+        //     console.log(d.split(''));
+        // });
+        
         _map = InitBoard(_map);
-        PrintBoard(_map);
+        //PrintBoard(_map);
         EvaluateHeuristic(_map, _goal, _heuristicValue);
         //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
         AStarPath(_start, _goal);
-    });
-
-    function PrintBoard(board){
-        var printed = board.map(function(row) {
-            return row.map(function(cell) {
-                return cell.complexity;
-            })
+        if((500 - _goal.G) > 0)
+            console.log('Score: ' + (500 - _goal.G));
+        else
+            console.log('Score: 0');
+            
+        console.log('Actions taken: ' + actionLog.length);
+        
+        console.log('Number of Nodes Expanded: ' + nodesExpanded);
+        
+        PrintActionLog();
         });
-        console.log(printed);
-    }
+
+        //record the action the robot took to the actionLog
+        function LogAction(actionTook){
+            actionLog[actionStep] = actionTook;
+            actionStep++;
+        }
+
+        function PrintActionLog(){
+            console.log('Actions: ')
+            actionLog.forEach(function(d) {
+                console.log(d);
+            });
+        }
+
+        function PrintBoard(board){
+            var printed = board.map(function(row) {
+                return row.map(function(cell) {
+                    return cell.complexity;
+                })
+            });
+            console.log(printed);
+        }
 
     //Add cells to board
     function InitBoard(oldBoard) {
@@ -200,7 +239,6 @@ function PerformAStar() {
                 map[i][j].ReevaluateF();
             }
         }
-
     }
 
     function PrintPath(path) {
@@ -213,6 +251,10 @@ function PerformAStar() {
     // generate an Astar path
     function AStarPath(start, goal){
         console.log("Starting at [" + start.x + ", " + start.y+"]")
+        
+        robotX = start.x;
+        robotY = start.y;
+        
         var success = Search(start, goal);
         var plannedPath = [];
         if(success){
@@ -224,13 +266,139 @@ function PerformAStar() {
         }
 
         plannedPath.reverse();
+        plannedPath.forEach(function(d){
+            switch(robotDir){
+                case 1:
+                    if(d.y == robotY - 1)
+                        LogAction('forward');
+                    else if(d.y == robotY + 1){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('forward');
+                    }
+                    else if(d.y == robotY + 3){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('leap');
+                    }
+                    else if(d.y == robotY - 3)
+                        LogAction('leap');
+                    else if(d.x < robotX){
+                        LogAction('turn right');
+                        if(d.x == robotX - 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 0;
+                    }
+                    else{
+                        LogAction('turn left');
+                        if(d.x == robotX + 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 2;
+                    }
+                    break;
+                case 0:
+                    if(d.x == robotX - 1)
+                        LogAction('forward');
+                    else if(d.x == robotX + 1){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('forward');
+                    }
+                    else if(d.x == robotX + 3){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('leap');
+                    }
+                    else if(d.x == robotX - 3)
+                        LogAction('leap');
+                    else if(d.y < robotY){
+                        LogAction('turn left');
+                        if(d.y == robotY - 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 1;
+                    }
+                    else{
+                        LogAction('turn right');
+                        if(d.y == robotY + 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 3;
+                    }
+                    break;
+                case 3:
+                    if(d.y == robotY + 1)
+                        LogAction('forward');
+                    else if(d.y == robotY - 1){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('forward');
+                    }
+                    else if(d.y == robotY - 3){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('leap');
+                    }
+                    else if(d.y == robotY + 3)
+                        LogAction('leap');
+                    else if(d.x < robotX){
+                        LogAction('turn left');
+                        if(d.x == robotX - 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 0;
+                    }
+                    else{
+                        LogAction('turn right');
+                        if(d.x == robotX + 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 2;
+                    }
+                    break;
+                case 2:
+                    if(d.x == robotX + 1)
+                        LogAction('forward');
+                    else if(d.x == robotX - 1){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('forward');
+                    }
+                    else if(d.x == robotX - 3){
+                        LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+                        LogAction('leap');
+                    }
+                    else if(d.x == robotX + 3)
+                        LogAction('leap');
+                    else if(d.y < robotY){
+                        LogAction('turn right');
+                        if(d.y == robotY - 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 1;
+                    }
+                    else{
+                        LogAction('turn left');
+                        if(d.y == robotY + 1)
+                            LogAction('forward');
+                        else
+                            LogAction('leap');
+                        robotDir = 3;
+                    }
+                    break;
+            }
+            robotX = d.x;
+            robotY = d.y;
+        });
         PrintPath(plannedPath);
         console.log("Ending at at [" + goal.x + ", " + goal.y+"]")
         console.log("Total cost: " + goal.G);
         return plannedPath;
     }
 
-    // Do the Astar search
+    /// Do the Astar search
     function Search(start, goal)
     {
         // Already evaluated nodes go here
@@ -259,6 +427,7 @@ function PerformAStar() {
 
             openSet.splice(openSet.indexOf(current), 1);
             closedSet.push(current);
+            nodesExpanded++;
 
             var neighbors = GetAdjacentCoordinates(current, _map);
             for(var i = 0; i < neighbors.length; i++)
@@ -274,7 +443,6 @@ function PerformAStar() {
                 var turnCost = 0;
                 if(current.parentNode != undefined && (GetHeading(current.parentNode, current) != GetHeading(current, neighborNode)))
                 {
-                    //console.log("TURNING!");
                     turnCost = CalculateTurnCost(current);
                 }
                 if(neighborNode.eval == "neighbor"){
