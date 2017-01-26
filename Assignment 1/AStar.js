@@ -1,8 +1,9 @@
 var fs = require('fs');
 
 //stops the program if the board file isn't included
-if (process.argv.length !== 3) {
-    console.error('Exactly one argument required');
+if (process.argv.length !== 4) {
+    console.error('Exactly two arguments required');
+    console.error('node AStar.js <boardfile>.txt <heuristic to use>');
     process.exit(1);
 }
 
@@ -62,6 +63,7 @@ if(process.argv[2] == 'random'){
 }
 
 var _mapFile = process.argv[2];
+var heuristicValue = process.argv[3];
 
 // TODO: some sort of persistent node grid stored here;
 // ideally a 2d array of x, y coordinates
