@@ -88,11 +88,17 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _map = _map.replace(/[\r]/g, '');
   _map = _map.split('\n');
   _mapStr = _map;
+  
+  _map.forEach(function(d) {
+    console.log(d.split(''));
+  });
+  
   _map = InitBoard(_map);
-  PrintBoard(_map);
+  //PrintBoard(_map);
   EvaluateHeuristic(_map, _goal, _heuristicValue);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_start, _goal);
+  console.log('Took ' + actionLog.length + ' actions');
   PrintActionLog();
 });
 
