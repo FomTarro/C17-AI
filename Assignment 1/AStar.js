@@ -1,4 +1,5 @@
 var fs = require('fs');
+var Heuristic = require('./heuristics')();
 
 //stops the program if the board file isn't included
 if (process.argv.length !== 4) {
@@ -11,8 +12,8 @@ if (process.argv.length !== 4) {
 if(process.argv[2] == 'random'){
 	var newBoard = [];
 	
-	var boardWidth = Math.floor((Math.random() * 7) + 3);
-	var boardHeight = Math.floor((Math.random() * 7) + 3);
+	var boardWidth = Math.floor((Math.random() * 20) + 5);
+	var boardHeight = Math.floor((Math.random() * 20) + 5);
 	
 	var goalX = Math.floor(Math.random() * boardWidth);
 	var goalY = Math.floor(Math.random() * boardHeight);
@@ -162,17 +163,41 @@ function PerformAStar() {
 
 
     function EvaluateHeuristic(map, goal, heuristic){
+        console.log("Evaluating heuristic: " + heuristic);
         for(var i = 0; i < map.length; i++){
             for(var j = 0; j < map[0].length; j++){
-                if(heuristic == 1)
-                {
-                    map[i][j].H = Math.abs(i - goal.x) + Math.abs(j - goal.y); 
-                    map[i][j].ReevaluateF();
+                var horizontal = Heuristic.findAbsDistanceOfX(i, goal.x);
+                var vertical = Heuristic.findAbsDistanceOfY(j, goal.y);
+                switch(parseInt(heuristic)) {
+                    case 1:
+                        // start with base heuristic of 0
+                        map[i][j].H = 0;
+                        break;
+                    case 2:
+                        // find the min heuristic
+                        map[i][j].H = Heuristic.Min(vertical, horizontal);
+                        break;
+                    case 3:
+                        // same for the max heuristic
+                        map[i][j].H = Heuristic.Max(vertical, horizontal);
+                        break;
+                    case 4:
+                        // find the "manhattan" heuristic
+                        //map[i][j].H = Math.abs(i - goal.x) + Math.abs(j - goal.y); 
+                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal);
+                        break;
+                    case 5:
+                        // find the true goal cost as of the current unit of time spent and store it as a heuristic
+		                // (this is an admissable heuristic)
+                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) / 1;
+                        break;
+                    case 6:
+                        // find a non-admissable heuristic
+                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) * 3;
+                        break;
                 }
-                else if(heuristic == 2)
-                {
-                    
-                }
+                //console.log("Cell Heuristic: " + map[i][j].H);
+                map[i][j].ReevaluateF();
             }
         }
 
@@ -249,8 +274,8 @@ function PerformAStar() {
                 var turnCost = 0;
                 if(current.parentNode != undefined && (GetHeading(current.parentNode, current) != GetHeading(current, neighborNode)))
                 {
-                    console.log("TURNING!");
-                    turnCost = CalculateTurnCost(neighborNode);
+                    //console.log("TURNING!");
+                    turnCost = CalculateTurnCost(current);
                 }
                 if(neighborNode.eval == "neighbor"){
                     var gTemp = current.G + turnCost + parseInt(neighborNode.complexity);
