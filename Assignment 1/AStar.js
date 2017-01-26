@@ -138,36 +138,6 @@ function InitBoard(oldBoard) {
     return newBoard;
 }
 
-/*
-function GetStart(map) {
-    var start;
-    map.forEach(function(row){
-        var result = row.filter(function(cell){
-            return cell.complexity == "S"; 
-        });
-        if(result.length != 0) start = result[0];
-    })
-    if(start == undefined)
-        throw new Error("Cannot find start cell");
-    else
-        return start;
-}
-
-function GetGoal(map) {
-    var goal;
-    map.forEach(function(row){
-        var result = row.filter(function(cell){
-            return cell.complexity == "G"; 
-        });
-        if(result.length != 0) goal = result[0];
-    })
-    if(goal == undefined)
-        throw new Error("Cannot find goal cell");
-    else
-        return goal;
-}
-*/
-
 function Cell(x, y, complexity) {
     this.x = x;
     this.y = y;
