@@ -79,7 +79,7 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _mapStr = _map;
   _map = InitBoard(_map);
   PrintBoard(_map);
-  EvaluateHeuristic(_map,  _goal);
+  EvaluateHeuristic(_map, _goal);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_start, _goal);
 });
@@ -114,6 +114,14 @@ function InitBoard(oldBoard) {
     return newBoard;
 }
 
+function PrintPath(path) {
+    var printed = path.map(function(cell){
+        return (cell.x + " " + cell.y);
+    });
+    console.log(printed);
+}
+
+
 /*
 function GetStart(map) {
     var start;
@@ -144,21 +152,6 @@ function GetGoal(map) {
 }
 */
 
-function PrintPath(path) {
-    var printed = path.map(function(cell){
-        return (cell.x + " " + cell.y);
-    });
-    console.log(printed);
-}
-
-/*
-a Node needs the folowing properties:
-
-G (intitially infinity)
-H (heuristic)
-F = (g + h) = cost
-parentNode;
-*/
 function Cell(x, y, complexity) {
     this.x = x;
     this.y = y;
@@ -216,6 +209,7 @@ function PrintPath(path) {
 
 // generate an Astar path
 function AStarPath(start, goal){
+    console.log("Starting at [" + start.x + ", " + start.y+"]")
     var success = Search(start, goal);
     var plannedPath = [];
     if(success){
@@ -228,6 +222,8 @@ function AStarPath(start, goal){
 
     plannedPath.reverse();
     PrintPath(plannedPath);
+    console.log("Ending at at [" + goal.x + ", " + goal.y+"]")
+    console.log("Total cost: " + goal.G);
     return plannedPath;
 }
 
@@ -250,7 +246,7 @@ function Search(start, goal)
 
         // investigate lowest f-score first
         var current = openSet[0];
-        console.log(current.F);
+        //console.log(current.F);
 
         if(current == goal)
         {
