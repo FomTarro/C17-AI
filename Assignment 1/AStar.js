@@ -70,6 +70,15 @@ var _heuristicValue = process.argv[3];
 var _mapStr;
 var _map = {};
 
+//array of strings representing the list of actions took to reach the goal
+var actionLog = [];
+//the current action step
+var actionStep = 0;
+
+var robotX;
+var robotY;
+var robotDir = 0;//(0 = north, 1 = west, 2 = south, 3 = east)
+
 var _start;
 var _goal;
 
@@ -84,7 +93,20 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   EvaluateHeuristic(_map, _goal, _heuristicValue);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_start, _goal);
+  PrintActionLog();
 });
+
+//record the action the robot took to the actionLog
+function LogAction(actionTook){
+	actionLog[actionStep] = actionTook;
+	actionStep++;
+}
+
+function PrintActionLog(){
+	actionLog.forEach(function(d) {
+    	console.log(d);
+	});
+}
 
 function PrintBoard(board){
     var printed = board.map(function(row) {
@@ -182,6 +204,10 @@ function PrintPath(path) {
 // generate an Astar path
 function AStarPath(start, goal){
     console.log("Starting at [" + start.x + ", " + start.y+"]")
+    
+    robotX = start.x;
+    robotY = start.y;
+    
     var success = Search(start, goal);
     var plannedPath = [];
     if(success){
@@ -193,6 +219,132 @@ function AStarPath(start, goal){
     }
 
     plannedPath.reverse();
+    plannedPath.forEach(function(d){
+    	switch(robotDir){
+    		case 1:
+    			if(d.y == robotY - 1)
+    				LogAction('forward');
+    			else if(d.y == robotY + 1){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('forward');
+    			}
+    			else if(d.y == robotY + 3){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('leap');
+    			}
+    			else if(d.y == robotY - 3)
+    				LogAction('leap');
+    			else if(d.x < robotX){
+    				LogAction('turn right');
+    				if(d.x == robotX - 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 0;
+    			}
+    			else{
+    				LogAction('turn left');
+    				if(d.x == robotX + 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 2;
+    			}
+    			break;
+    		case 0:
+    			if(d.x == robotX - 1)
+    				LogAction('forward');
+    			else if(d.x == robotX + 1){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('forward');
+    			}
+    			else if(d.x == robotX + 3){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('leap');
+    			}
+    			else if(d.x == robotX - 3)
+    				LogAction('leap');
+    			else if(d.y < robotY){
+    				LogAction('turn left');
+    				if(d.y == robotY - 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 1;
+    			}
+    			else{
+    				LogAction('turn right');
+    				if(d.y == robotY + 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 3;
+    			}
+    			break;
+    		case 3:
+    			if(d.y == robotY + 1)
+    				LogAction('forward');
+    			else if(d.y == robotY - 1){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('forward');
+    			}
+    			else if(d.y == robotY - 3){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('leap');
+    			}
+    			else if(d.y == robotY + 3)
+    				LogAction('leap');
+    			else if(d.x < robotX){
+    				LogAction('turn left');
+    				if(d.x == robotX - 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 0;
+    			}
+    			else{
+    				LogAction('turn right');
+    				if(d.x == robotX + 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 2;
+    			}
+    			break;
+    		case 2:
+    			if(d.x == robotX + 1)
+    				LogAction('forward');
+    			else if(d.x == robotX - 1){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('forward');
+    			}
+    			else if(d.x == robotX - 3){
+    				LogAction('turn 180');//REPLACE ONCE TURNING IS DONE
+    				LogAction('leap');
+    			}
+    			else if(d.x == robotX + 3)
+    				LogAction('leap');
+    			else if(d.y < robotY){
+    				LogAction('turn right');
+    				if(d.y == robotY - 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 1;
+    			}
+    			else{
+    				LogAction('turn left');
+    				if(d.y == robotY + 1)
+    					LogAction('forward');
+    				else
+    					LogAction('leap');
+    				robotDir = 3;
+    			}
+    			break;
+    	}
+    	robotX = d.x;
+    	robotY = d.y;
+    });
     PrintPath(plannedPath);
     console.log("Ending at at [" + goal.x + ", " + goal.y+"]")
     console.log("Total cost: " + goal.G);
