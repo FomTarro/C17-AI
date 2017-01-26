@@ -244,7 +244,7 @@ function Search(start, goal)
             if(current.parentNode != undefined && (GetHeading(current.parentNode, current) != GetHeading(current, neighborNode)))
             {
                 console.log("TURNING!");
-                turnCost = CalculateTurnCost(neighborNode);
+                turnCost = CalculateTurnCost(current);
             }
             if(neighborNode.eval == "neighbor"){
                 var gTemp = current.G + turnCost + parseInt(neighborNode.complexity);
