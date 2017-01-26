@@ -98,7 +98,11 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   EvaluateHeuristic(_map, _goal, _heuristicValue);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_start, _goal);
-  console.log('Score: ' + (500 - _goal.G));
+  if((500 - _goal.G) > 0)
+  	console.log('Score: ' + (500 - _goal.G));
+  else
+  	console.log('Score: 0');
+  	
   console.log('Actions taken: ' + actionLog.length);
   PrintActionLog();
 });
