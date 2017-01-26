@@ -24,7 +24,7 @@ fs.readFile(_mapFile, 'utf-8', function (err, data){
   _mapStr = _map;
   _map = InitBoard(_map);
   PrintBoard(_map);
-  EvaluateHeuristic(_map,  _map[0][1]);
+  EvaluateHeuristic(_map, _goal);
   //!!!!!!!RUN ASTAR IN HERE!!!!!!!!!!!!!!
   AStarPath(_start, _goal);
 });
@@ -59,23 +59,6 @@ function InitBoard(oldBoard) {
     return newBoard;
 }
 
-function EvaluateHeuristic(map, goal){
-    for(var i = 0; i < map.length; i++){
-        for(var j = 0; j < map[0].length; j++){
-            map[i][j].H = Math.abs(i - goal.x) + Math.abs(j - goal.y); 
-            //console.log(map[i][j].H);
-        }
-    }
-
-}
-
-function PrintPath(path) {
-    var printed = path.map(function(cell){
-        return (cell.x + " " + cell.y);
-    });
-    console.log(printed);
-}
-
 /*
 a Node needs the folowing properties:
 
@@ -96,8 +79,13 @@ function Cell(x, y, complexity) {
 
      // For each node, the total cost of getting from the start node to the goal
     this.F = this.G + this.H;
+
     this.parentNode = undefined;
     this.eval = "";
+
+    this.ReevaluateF = function(){
+        this.F = this.G + this.H;
+    };
 
     //Check if complexity is valid
     if(complexity == typeof(string)) {
@@ -114,6 +102,24 @@ function Cell(x, y, complexity) {
     }
 
     return this;
+}
+
+
+function EvaluateHeuristic(map, goal){
+    for(var i = 0; i < map.length; i++){
+        for(var j = 0; j < map[0].length; j++){
+            map[i][j].H = Math.abs(i - goal.x) + Math.abs(j - goal.y); 
+            map[i][j].ReevaluateF();
+        }
+    }
+
+}
+
+function PrintPath(path) {
+    var printed = path.map(function(cell){
+        return (cell.x + " " + cell.y + " (" + cell.G + ")");
+    });
+    console.log(printed);
 }
 
 // generate an Astar path
@@ -157,32 +163,27 @@ function Search(start, goal)
 
         // investigate lowest f-score first
         var current = openSet[0];
+        console.log(current.F);
 
         if(current == goal)
             return true;
 
         openSet.splice(openSet.indexOf(current), 1);
         closedSet.push(current);
-
         var neighbors = GetAdjacentCoordinates(current, _map);
         for(var i = 0; i < neighbors.length; i++){
             var neighborNode = neighbors[i];
-
+            
             // check if node with these coordinates exists in the closed set
             // if so, continue
             if(closedSet.includes(neighborNode))
                 continue;
-
-            // TODO: factor in turning costs
             if(neighborNode.eval == "neighbor"){
                 var gTemp = current.G + parseInt(neighborNode.complexity);
             } // factor in the additional cost of leaping
             else if(neighborNode.eval == "leap"){
                  var gTemp = current.G + 20;
             }
-            console.log(neighborNode.x + ", " + neighborNode.y + " : " + gTemp);
-            // update the G value
-            //var gTemp = current.G + 1;
 
             if(!openSet.includes(neighborNode)) // discover a new node
                 openSet.push(neighborNode);
@@ -192,6 +193,7 @@ function Search(start, goal)
             // this is the best path until now, so record itself
             neighborNode.parentNode = current;
             neighborNode.G = gTemp;
+            neighborNode.ReevaluateF();
         }
     }
     return false;
@@ -203,7 +205,6 @@ function GetAdjacentCoordinates(node, map){
     var maxWidth = map.length;
     var maxHeight = map[0].length;
     var nodeList = [];
-    console.log("FROM: " + node.x + ", " + node.y  + "(" + node.complexity + ")");
     for(var x = -1; x <= 1; x++)
     {
          for(var y = -1; y <= 1; y++)
@@ -223,7 +224,6 @@ function GetAdjacentCoordinates(node, map){
                  if(neighbor.complexity != "#")
                  {
                     nodeList.push(neighbor);
-                    console.log(neighbor.x + ", " + neighbor.y + "(" +neighbor.complexity + ") : " + neighbor.eval);
                  }
              }
              if((xLeapCoord < maxWidth && xLeapCoord >= 0) && (yLeapCoord < maxHeight && yLeapCoord > 0) 
@@ -233,12 +233,9 @@ function GetAdjacentCoordinates(node, map){
                  if(neighbor.complexity != "#")
                  {
                     nodeList.push(neighbor);
-                    console.log(neighbor.x + ", " + neighbor.y + "(" +neighbor.complexity + ") : " + neighbor.eval);
                  }
              }
-         }
-       
+         }  
     }
-    console.log("----");
     return nodeList;
 }
