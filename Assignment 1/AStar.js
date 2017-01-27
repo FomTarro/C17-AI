@@ -90,6 +90,9 @@ function PerformAStar() {
     var _start;
     var _goal;
 
+    var iterator = 0;
+    var iterations = 0;
+
     fs.readFile(_mapFile, 'utf-8', function (err, data){
     if (err) throw err;
     _map = data.replace(/[	]/g, '');
@@ -410,6 +413,8 @@ function PerformAStar() {
 
         var facingDir = "North"
 
+        var iterator = 0;
+
         while(openSet.length > 0)
         {
             // sort list by lowest f-score
@@ -452,8 +457,11 @@ function PerformAStar() {
                     var gTemp = current.G + turnCost + 20;
                 }
 
-                if(!openSet.includes(neighborNode)) // discover a new node
+                if(!openSet.includes(neighborNode)){
+                iterator = iterator + 1;
+                 // discover a new node
                     openSet.push(neighborNode);
+                }
                 else if(gTemp >= neighborNode.G) // this is not a better path
                     continue;
 
@@ -465,6 +473,7 @@ function PerformAStar() {
                 neighborNode.G = gTemp;
                 neighborNode.ReevaluateF();
             }
+            iterations = iterations + 1;
         }
 
         // no path could be found
