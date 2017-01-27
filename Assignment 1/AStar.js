@@ -100,7 +100,7 @@ function PerformAStar() {
     _mapStr = _map;
     
     _map.forEach(function(d) {
-        console.log(d.split(''));
+        //console.log(d.split(''));
     });
     
     _map = InitBoard(_map);
@@ -113,10 +113,12 @@ function PerformAStar() {
     else
         console.log('Score: 0');
         
-    console.log('Actions taken: ' + actionLog.length);
+    console.log('Number of actions: ' + actionLog.length);
     
-    console.log('Number of Nodes Expanded: ' + nodesExpanded);
+    console.log('Number of nodes expanded: ' + nodesExpanded);
     
+    console.log("Estimated branching factor: " + (Math.pow(_openThroughout, 1/_openIterations).toPrecision(5)));
+
     PrintActionLog();
     });
 
@@ -203,7 +205,7 @@ function PerformAStar() {
 
 
     function EvaluateHeuristic(map, goal, heuristic){
-        console.log("Evaluating heuristic: " + heuristic);
+        //console.log("Evaluating heuristic: " + heuristic);
         for(var i = 0; i < map.length; i++){
             for(var j = 0; j < map[0].length; j++){
                 var horizontal = Heuristic.findAbsDistanceOfX(i, goal.x);
@@ -258,7 +260,7 @@ function PerformAStar() {
 
     // generate an Astar path
     function AStarPath(start, goal){
-        console.log("Starting at [" + start.x + ", " + start.y+"]")
+        //console.log("Starting at [" + start.x + ", " + start.y+"]")
         
         robotX = start.x;
         robotY = start.y;
@@ -400,10 +402,9 @@ function PerformAStar() {
             robotX = d.x;
             robotY = d.y;
         });
-        PrintPath(plannedPath);
-        console.log("Effective Branching Factor: " + (Math.pow(_openThroughout, 1/_openIterations)));
-        console.log("Ending at at [" + goal.x + ", " + goal.y+"]")
-        console.log("Total cost: " + goal.G);
+        //PrintPath(plannedPath);
+        //console.log("Ending at at [" + goal.x + ", " + goal.y+"]")
+        //console.log("Total cost: " + goal.G);
         return plannedPath;
     }
 
