@@ -82,6 +82,8 @@ function PerformAStar() {
     var actionStep = 0;
 
     var nodesExpanded = 0;
+    var _openThroughout = 1;
+    var _openIterations = 1;
 
     var robotX;
     var robotY;
@@ -89,10 +91,7 @@ function PerformAStar() {
 
     var _start;
     var _goal;
-
-    var iterator = 0;
-    var iterations = 0;
-
+    if(_mapFile == "random") _mapFile += ".txt";
     fs.readFile(_mapFile, 'utf-8', function (err, data){
     if (err) throw err;
     _map = data.replace(/[	]/g, '');
@@ -230,11 +229,17 @@ function PerformAStar() {
                     case 5:
                         // find the true goal cost as of the current unit of time spent and store it as a heuristic
 		                // (this is an admissable heuristic)
-                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) / 1;
+                        var additionalHeuristic = 0;
+                        if(horizontal > 0 && vertical > 0)
+                            additionalHeuristic = 1;
+                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) + additionalHeuristic;
                         break;
                     case 6:
                         // find a non-admissable heuristic
-                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) * 3;
+                        var additionalHeuristic = 0;
+                        if(horizontal > 0 && vertical > 0)
+                            additionalHeuristic = 1;
+                        map[i][j].H = (Heuristic.Manhattan(vertical, horizontal) + additionalHeuristic) * 9;
                         break;
                 }
                 //console.log("Cell Heuristic: " + map[i][j].H);
@@ -396,6 +401,7 @@ function PerformAStar() {
             robotY = d.y;
         });
         PrintPath(plannedPath);
+        console.log("Effective Branching Factor: " + (Math.pow(_openThroughout, 1/_openIterations)));
         console.log("Ending at at [" + goal.x + ", " + goal.y+"]")
         console.log("Total cost: " + goal.G);
         return plannedPath;
@@ -412,8 +418,6 @@ function PerformAStar() {
         start.G = 0;
 
         var facingDir = "North"
-
-        var iterator = 0;
 
         while(openSet.length > 0)
         {
@@ -433,7 +437,6 @@ function PerformAStar() {
             openSet.splice(openSet.indexOf(current), 1);
             closedSet.push(current);
             nodesExpanded++;
-
             var neighbors = GetAdjacentCoordinates(current, _map);
             for(var i = 0; i < neighbors.length; i++)
             {
@@ -457,11 +460,8 @@ function PerformAStar() {
                     var gTemp = current.G + turnCost + 20;
                 }
 
-                if(!openSet.includes(neighborNode)){
-                iterator = iterator + 1;
-                 // discover a new node
+                if(!openSet.includes(neighborNode)) // discover a new node
                     openSet.push(neighborNode);
-                }
                 else if(gTemp >= neighborNode.G) // this is not a better path
                     continue;
 
@@ -473,7 +473,10 @@ function PerformAStar() {
                 neighborNode.G = gTemp;
                 neighborNode.ReevaluateF();
             }
-            iterations = iterations + 1;
+
+            _openThroughout += neighbors.length;
+            _openIterations++;
+
         }
 
         // no path could be found
