@@ -91,7 +91,7 @@ function PerformAStar() {
 
     var _start;
     var _goal;
-
+    if(_mapFile == "random") _mapFile += ".txt";
     fs.readFile(_mapFile, 'utf-8', function (err, data){
     if (err) throw err;
     _map = data.replace(/[	]/g, '');
