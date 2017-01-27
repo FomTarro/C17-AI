@@ -82,6 +82,8 @@ function PerformAStar() {
     var actionStep = 0;
 
     var nodesExpanded = 0;
+    var _openThroughout = 0;
+    var _openIterations = 1;
 
     var robotX;
     var robotY;
@@ -393,6 +395,7 @@ function PerformAStar() {
             robotY = d.y;
         });
         PrintPath(plannedPath);
+        console.log("Branching Factor: " + (_openThroughout / _openIterations));
         console.log("Ending at at [" + goal.x + ", " + goal.y+"]")
         console.log("Total cost: " + goal.G);
         return plannedPath;
@@ -428,8 +431,9 @@ function PerformAStar() {
             openSet.splice(openSet.indexOf(current), 1);
             closedSet.push(current);
             nodesExpanded++;
-
             var neighbors = GetAdjacentCoordinates(current, _map);
+            _openThroughout += neighbors.length;
+            _openIterations++;
             for(var i = 0; i < neighbors.length; i++)
             {
                 var neighborNode = neighbors[i];
