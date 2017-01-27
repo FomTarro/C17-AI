@@ -521,7 +521,7 @@ function PerformAStar() {
                     }
                 }
                 if((xLeapCoord < maxWidth && xLeapCoord >= 0) && (yLeapCoord < maxHeight && yLeapCoord > 0) 
-                && !(x == 0 && y == 0)){
+                && !(x == 0 && y == 0) && ((Math.abs(x) + Math.abs(y)) != 2)){
                     neighbor = map[xLeapCoord][yLeapCoord];
                     neighbor.eval = "leap";
                     if(neighbor.complexity != "#")
