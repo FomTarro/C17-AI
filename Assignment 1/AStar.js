@@ -229,11 +229,17 @@ function PerformAStar() {
                     case 5:
                         // find the true goal cost as of the current unit of time spent and store it as a heuristic
 		                // (this is an admissable heuristic)
-                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) / 1;
+                        var additionalHeuristic = 0;
+                        if(horizontal > 0 && vertical > 0)
+                            additionalHeuristic = 1;
+                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) + additionalHeuristic;
                         break;
                     case 6:
                         // find a non-admissable heuristic
-                        map[i][j].H = Heuristic.Manhattan(vertical, horizontal) * 3;
+                        var additionalHeuristic = 0;
+                        if(horizontal > 0 && vertical > 0)
+                            additionalHeuristic = 1;
+                        map[i][j].H = (Heuristic.Manhattan(vertical, horizontal) + additionalHeuristic) * 9;
                         break;
                 }
                 //console.log("Cell Heuristic: " + map[i][j].H);
