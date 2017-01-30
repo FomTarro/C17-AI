@@ -39,7 +39,8 @@ var _bin3 = [];
 
 function Optimize(){
 	InitializeBins();
-	PrintBins();
+	PrintBins(true);
+	console.log("Total Score: " + TotalScore());
 }
 
 //randomly assigns numbers to bins
@@ -64,7 +65,70 @@ function InitializeBins(){
 	}
 }
 
-//print bins and their scores SCORE NOT IMPLEMENTED YET
-function PrintBins(){
-	console.log("Bin 1: " + _bin1 + "\nBin 2: " + _bin2 + "\nBin 3: " + _bin3);
+//print bins and their scores if showScores is true
+function PrintBins(showScores){
+	if(showScores)
+		console.log("Bin 1: [" + _bin1 + "] Score: " + ScoreBin(1) +
+					"\nBin 2: [" + _bin2 + "] Score: " + ScoreBin(2) +
+					"\nBin 3: [" + _bin3 + "] Score: " + ScoreBin(3));
+	else
+		console.log("Bin 1: [" + _bin1 + 
+					"]\nBin 2: [" + _bin2 + 
+					"]\nBin 3: [" + _bin3);
+}
+
+//returns the score of the given bin
+function ScoreBin(binNum){
+	var score = 0;
+	switch(binNum){
+		case 1:
+			var multiplier = 1;
+			_bin1.forEach(function(d){
+				score += parseInt(d) * multiplier;
+				multiplier = multiplier * (-1);
+			});
+			break;
+		case 2:
+			for(var i = 1; i < _bin2.length; i++){
+				if(_bin2[i] > _bin2[i - 1])
+					score += 3;
+				else if(_bin2[i] == _bin2[i - 1])
+					score += 5;
+				else if(_bin2[i] < _bin2[i - 1])
+					score -= 10;
+			}
+			break;
+		case 3:
+			var half1 = _bin3.slice(0, Math.floor(_bin3.length / 2));
+			var half2 = _bin3.slice(Math.ceil(_bin3.length / 2));
+			
+			half1.forEach(function(d){
+				if(d == 2 || d == 3 || d == 5 || d == 7)
+					score += 4;
+				else if(d < 0)
+					score -= 2;
+				else
+					score -= parseInt(d);
+			});
+			
+			half2.forEach(function(d){
+				if(d == 2 || d == 3 || d == 5 || d == 7)
+					score -= 4;
+				else if(d < 0)
+					score += 2;
+				else
+					score += parseInt(d);
+			});
+			break;
+		default:
+			console.error("/!\\ Bin " + binNum + " is not a bin!");
+			return NaN;
+			break;
+	}
+	return score;
+}
+
+//returns total score of all bins
+function TotalScore(){
+	return parseInt(ScoreBin(1)) + parseInt(ScoreBin(2)) + parseInt(ScoreBin(3));
 }
