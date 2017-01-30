@@ -46,7 +46,7 @@ function Optimize(){
 	PrintBins(true);
 	most_recent_score = TotalScore();
 	console.log("Total Score: " + TotalScore());
-	HillClimbing(most_recent_score);
+	HillClimbing(most_recent_score, [_bin1, _bin2, _bin3]);
 }
 
 //randomly assigns numbers to bins
@@ -143,29 +143,47 @@ function TotalScore(){
 	return parseInt(totalScore);
 }
 
-function HillClimbing(currBestScore)
+function HillClimbing(currBestScore, bins)
 {
 	// generate a new set of bins from the same input file
 	currBestScore = parseInt(currBestScore);
-	InitializeBins();
+	
+	counter = 0;
+	
+	for(var i = 0; i < _input.length / 3; i++){
+		for(var j = 0; j < 3; j++){
+			for(var k = 0; k < _input.length / 3; k++){
+				for(var l = 0; l < 3; l++){
+					if(i !== k || j !== l){
+						targetValue = bins[i][j];
+						bins[i][j] = bins[k][l];
+						bins[k][l] = targetValue;
+						
+						
+						//PrintBins(true);
+						var curr_best_score = 0;
+						var new_score = 0;
+						new_score = TotalScore();
+						//console.log("Last Total Score: " + parseInt(new_score));
+						// allow 100 iterations for correct solution
+						// if the current score is better than the last one, continue
+						if (new_score > currBestScore && counter <= 100)
+						{
+							curr_best_score = new_score;
+							return HillClimbing(parseInt(curr_best_score), bins);
+						}
+						
+						counter++;
+						
+						bins[k][l] = bins[i][j];
+						bins[i][j] = targetValue;
+					}
+				}
+			}
+		}
+	}
+	
 	PrintBins(true);
-	var curr_best_score = 0;
-	var new_score = 0;
-	new_score = TotalScore();
-	console.log("Last Total Score: " + parseInt(new_score));
-	// allow 100 iterations for correct solution
-	// if the current score is better than the last one, continue
-	if (new_score > currBestScore && counter <= 100)
-	{
-		curr_best_score = new_score;
-		counter++;
-		HillClimbing(parseInt(curr_best_score));
-	}
-	// if it is worse, stop
-	else
-	{
-		console.log("Best Solution: " + currBestScore);
-		return currBestScore;
-	}
-	return -1;
+	console.log("Best Solution: " + currBestScore);
+	return currBestScore;
 }
