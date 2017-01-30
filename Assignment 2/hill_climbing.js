@@ -16,8 +16,6 @@ var _allowedTime = process.argv[4];
 
 var _input = [];
 
-var most_recent_score = 0;
-var curr_best_score = 0;
 var counter = 0;
 
 //convert file to be a array of integers inserted into _input
@@ -36,7 +34,6 @@ fs.readFile(_inputFile, 'utf-8', function (err, data){
 	
 	console.log(_input);
 	Optimize();
-	HillClimbing(most_recent_score);
 });
 
 var _bin1 = [];
@@ -44,13 +41,19 @@ var _bin2 = [];
 var _bin3 = [];
 
 function Optimize(){
+	var most_recent_score = 0;
 	InitializeBins();
 	PrintBins(true);
+	most_recent_score = TotalScore();
 	console.log("Total Score: " + TotalScore());
+	HillClimbing(most_recent_score);
 }
 
 //randomly assigns numbers to bins
 function InitializeBins(){
+	_bin1 = [];
+	_bin2 = [];
+	_bin3 = [];
 	var input = _input;
 	var randomIndex;
 	var maxBinLength = _input.length / 3;
@@ -137,26 +140,32 @@ function ScoreBin(binNum){
 //returns total score of all bins
 function TotalScore(){
 	totalScore = parseInt(ScoreBin(1)) + parseInt(ScoreBin(2)) + parseInt(ScoreBin(3));
-	most_recent_score = totalScore;
-	return totalScore;
+	return parseInt(totalScore);
 }
 
 function HillClimbing(currBestScore)
 {
 	// generate a new set of bins from the same input file
-	Optimize();
+	currBestScore = parseInt(currBestScore);
+	InitializeBins();
+	PrintBins(true);
+	var curr_best_score = 0;
+	var new_score = 0;
+	new_score = TotalScore();
+	console.log("Last Total Score: " + parseInt(new_score));
 	// allow 100 iterations for correct solution
 	// if the current score is better than the last one, continue
-	if (currBestScore > most_recent_score && counter <= 100)
+	if (new_score > currBestScore && counter <= 100)
 	{
-		curr_best_score = most_recent_score;
+		curr_best_score = new_score;
 		counter++;
-		HillClimbing(curr_best_score);
+		HillClimbing(parseInt(curr_best_score));
 	}
 	// if it is worse, stop
 	else
 	{
-		curr_best_score = most_recent_score;
-		return curr_best_score;
+		console.log("Best Solution: " + currBestScore);
+		return currBestScore;
 	}
+	return -1;
 }
