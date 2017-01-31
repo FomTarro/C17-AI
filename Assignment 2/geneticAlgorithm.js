@@ -40,8 +40,9 @@ var _bin3 = [];
 function Optimize(){
 	InitializeBins();
 	PrintBins(true);
-    var best = RunGeneticAlgorithm();
-	console.log("Total Score: " + best);
+    var best = RunGeneticAlgorithm(5);
+    console.log("Total Score: " + best);
+    PrintBins(true);
 }
 
 //randomly assigns numbers to bins
@@ -137,39 +138,40 @@ function ScoreBin(binNum){
 function ScoreBins(binList){
 	var score = 0;
     var multiplier = 1;
+    var s1 = 0, s2 = 0, s3 = 0;
     binList[0].forEach(function(d){
-        score += parseInt(d) * multiplier;
+        s1 += parseInt(d) * multiplier;
         multiplier = multiplier * (-1);
     });
     for(var i = 1; i < binList[1].length; i++){
         if(binList[1][i] > binList[1][i - 1])
-            score += 3;
-        else if(binList[1] == binList[1][i - 1])
-            score += 5;
-        else if(binList[1] < binList[1][i - 1])
-            score -= 10;
+            s2 += 3;
+        else if(binList[1][i] == binList[1][i - 1])
+            s2 += 5;
+        else if(binList[1][i] < binList[1][i - 1])
+            s2 -= 10;
     }
     var half1 = binList[2].slice(0, Math.floor(binList[2].length / 2));
     var half2 = binList[2].slice(Math.ceil(binList[2].length / 2));
     
     half1.forEach(function(d){
         if(d == 2 || d == 3 || d == 5 || d == 7)
-            score += 4;
+            s3 += 4;
         else if(d < 0)
-            score -= 2;
+            s3 -= 2;
         else
-            score -= parseInt(d);
+            s3 -= parseInt(d);
     });
     
     half2.forEach(function(d){
         if(d == 2 || d == 3 || d == 5 || d == 7)
-            score -= 4;
+            s3 -= 4;
         else if(d < 0)
-            score += 2;
+            s3 += 2;
         else
-            score += parseInt(d);
+            s3 += parseInt(d);
     });
-	return score;
+	return s1 + s2 + s3;
 }
 
 //returns total score of all bins
@@ -177,9 +179,73 @@ function TotalScore(){
 	return parseInt(ScoreBin(1)) + parseInt(ScoreBin(2)) + parseInt(ScoreBin(3));
 }
 
-function RunGeneticAlgorithm() {
+function RunGeneticAlgorithm(startingPop) {
 
-    var probability = GenerateProbability(10);  //1 in 10th -- 0.1 chance of mutating
+    var mutations = 0;
+    var culls = 0;
+    var topPopLength= 0;
+    var generation = 0;
+
+    var probability = GenerateProbability(8);  //1 in 8 chance of mutating
+
+    var population = [
+        [
+            _bin1, _bin2, _bin3
+        ]
+    ]
+   
+    var best = ScoreBins(population[0]);
+    var worst = best;
+
+    console.log("Starting Score: " + best);
+
+    while(population.length < startingPop) {
+        InitializeBins();
+        population.push([
+            _bin1, _bin2, _bin3
+        ])
+        var newScore = ScoreBins(population[population.length - 1]);
+        UpdateScore(newScore, population[population.length - 1]);
+    }
+
+    while(generation < 12 || best == 38) {
+        //console.log("Generation " + generation);
+        var new_population = [];
+        for(var i = 0; i < population.length; i++) {
+            //randomly select x
+            var x = Select();
+            var binLength = x[0].length;
+            var cutPoint = RandomRange(1, binLength - 1);
+            //randomly select y
+            var y = Select(x);
+            var childA = Reproduce(x, y, binLength, cutPoint);
+            var scoreA = ScoreBins(childA);
+            var childB = Reproduce(y, x, binLength, cutPoint);
+            var scoreB = ScoreBins(childB);
+            //add child to new population
+            //console.log(childA + ", Score: " + scoreA);
+            //console.log(childB + ", Score: " + scoreB);
+            //Cull worsts
+            if(UpdateScore(scoreA, childA)) new_population.push(childA);
+            if(UpdateScore(scoreB, childB)) new_population.push(childB);
+        }
+        population.sort(function(a, b) {
+            return ScoreBins(b) - ScoreBins(a);
+        });
+        //Keep at most 10% best in the pool
+        topPopLength = Math.ceil(population.length * 0.02);
+        var topPop = population.slice(0, topPopLength);
+        population = new_population.concat(topPop);
+        //if an individual is fit enough or x amount of time has elapsed, break
+        generation++;
+    }
+    console.log("Culls: " + culls)
+    console.log("Top Pool: " + topPopLength);
+    console.log("Population: " + population.length);
+    console.log("Mutations: " + mutations);
+    return best;
+
+    /*************************** LOCAL FUNCTIONS USED BY GA ***************************/
 
     function Reproduce(x, y, n, c) {
         //x, y are inputs
@@ -213,8 +279,19 @@ function RunGeneticAlgorithm() {
     }
 
     function Mutate(item) {
-        //TO DO
-
+        mutations++;
+        var x1, y1, x2, y2;
+        var bufferSlot;
+        do {
+            x1 = RandomRange(0, 2);
+            y1 = RandomRange(0, item[0].length - 1);
+            x2 = RandomRange(0, 2);
+            y2 = RandomRange(0, item[0].length - 1);
+        } while(!(x1 == x2 && y1 == y2));
+        //swap xy_1 and xy_2
+        bufferSlot = item[x1][y1];
+        item[x1][y1] = item[x2][y2];
+        item[x2][y2] = bufferSlot;
         return item;
     }
 
@@ -225,78 +302,25 @@ function RunGeneticAlgorithm() {
         return bag;
     }
 
-    function UpdateScore(newScore) {
+    function UpdateScore(newScore, bins) {
         if(newScore > best) {
             best = newScore;
+            _bin1 = bins[0];
+            _bin2 = bins[1];
+            _bin3 = bins[2];
+            console.log("New Best: " + best + " at gen " + generation);
+            PrintBins(true);
             return true;
         }
-        else if(newScore < best && newScore > worst) {
+        else if(newScore <= best && newScore > worst) {
             return true;
         } 
         else if(newScore < worst){
+            culls++;
             worst = newScore;
             return false;
         }
     }
-
-    var population = [
-        [
-            _bin1, _bin2, _bin3
-        ]
-    ]
-   
-    var best = ScoreBins(population[0]);
-    var worst = best;
-
-    InitializeBins();
-
-    population.push([
-        _bin1, _bin2, _bin3
-    ])
-
-    var score2 = ScoreBins(population[1]);
-    if(score2 > best) { 
-        worst = best;
-        best = score2;
-    }
-    else worst = score2;
-
-    var generation = 0;
-    while(generation < 2) {
-        console.log("Generation " + generation);
-        var new_population = [];
-        for(var i = 0; i < population.length; i++) {
-            //randomly select x
-            var x = Select();
-            var binLength = x[0].length;
-            var cutPoint = RandomRange(1, binLength - 1);
-            //randomly select y
-            var y = Select(x);
-            var childA = Reproduce(x, y, binLength, cutPoint);
-            var scoreA = ScoreBins(childA);
-            var childB = Reproduce(y, x, binLength, cutPoint);
-            var scoreB = ScoreBins(childB);
-            //add child to new population
-            console.log(childA + ", Score: " + scoreA);
-            console.log(childB + ", Score: " + scoreB);
-            //Cull worsts
-            if(UpdateScore(scoreA)) new_population.push(childA);
-            if(UpdateScore(scoreB)) new_population.push(childB);
-        }
-        console.log(population[0] + " score " + ScoreBins(population[0]));
-        console.log(population[1] + " score " + ScoreBins(population[1]));
-        population.sort(function(a, b) {
-            ScoreBins(a) - ScoreBins(b);
-        });
-        console.log("Sorted: " + population);
-        console.log(population[0] + " score " + ScoreBins(population[0]));
-        console.log(population[1] + " score " + ScoreBins(population[1]));
-        population = new_population;
-        //if an individual is fit enough or x amount of time has elapsed, break
-        generation++;
-    }
-    
-    return best;
 }
 
 function RandomRange(min, max) {
