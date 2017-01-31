@@ -225,6 +225,20 @@ function RunGeneticAlgorithm() {
         return bag;
     }
 
+    function UpdateScore(newScore) {
+        if(newScore > best) {
+            best = newScore;
+            return true;
+        }
+        else if(newScore < best && newScore > worst) {
+            return true;
+        } 
+        else if(newScore < worst){
+            worst = newScore;
+            return false;
+        }
+    }
+
     var population = [
         [
             _bin1, _bin2, _bin3
@@ -232,6 +246,7 @@ function RunGeneticAlgorithm() {
     ]
    
     var best = ScoreBins(population[0]);
+    var worst = best;
 
     InitializeBins();
 
@@ -240,10 +255,14 @@ function RunGeneticAlgorithm() {
     ])
 
     var score2 = ScoreBins(population[1]);
-    if(score2 > best) best = score2;
-    
+    if(score2 > best) { 
+        worst = best;
+        best = score2;
+    }
+    else worst = score2;
+
     var generation = 0;
-    while(generation < 10) {
+    while(generation < 2) {
         console.log("Generation " + generation);
         var new_population = [];
         for(var i = 0; i < population.length; i++) {
@@ -251,10 +270,8 @@ function RunGeneticAlgorithm() {
             var x = Select();
             var binLength = x[0].length;
             var cutPoint = RandomRange(1, binLength - 1);
-            console.log("X: " + x);
             //randomly select y
             var y = Select(x);
-            console.log("Y: " + y);
             var childA = Reproduce(x, y, binLength, cutPoint);
             var scoreA = ScoreBins(childA);
             var childB = Reproduce(y, x, binLength, cutPoint);
@@ -262,13 +279,21 @@ function RunGeneticAlgorithm() {
             //add child to new population
             console.log(childA + ", Score: " + scoreA);
             console.log(childB + ", Score: " + scoreB);
-            if(scoreA > best) best = scoreA;
-            if(scoreB > best) best = scoreB;
-            new_population.push(childA, childB);
+            //Cull worsts
+            if(UpdateScore(scoreA)) new_population.push(childA);
+            if(UpdateScore(scoreB)) new_population.push(childB);
         }
-        generation++;
+        console.log(population[0] + " score " + ScoreBins(population[0]));
+        console.log(population[1] + " score " + ScoreBins(population[1]));
+        population.sort(function(a, b) {
+            ScoreBins(a) - ScoreBins(b);
+        });
+        console.log("Sorted: " + population);
+        console.log(population[0] + " score " + ScoreBins(population[0]));
+        console.log(population[1] + " score " + ScoreBins(population[1]));
         population = new_population;
         //if an individual is fit enough or x amount of time has elapsed, break
+        generation++;
     }
     
     return best;
