@@ -2,9 +2,9 @@
 var fs = require('fs');
 
 //stops the program if not enough arguments given
-if (process.argv.length !== 5) {
+if (process.argv.length !== 6) {
     console.error('Exactly two arguments required');
-    console.error('node optimize.js <optimization type> <input file>.txt <allowed time>');
+    console.error('node optimize.js <optimization type> <input file>.txt <allowed time> test.txt');
     process.exit(1);
 }
 
@@ -14,31 +14,41 @@ var _inputFile = process.argv[3];
 
 var _allowedTime = process.argv[4];
 
+var _testFile = process.argv[5];
+
 var _input = [];
+
+var _test = [];
 
 var counter = 0;
 
-//convert file to be a array of integers inserted into _input
-fs.readFile(_inputFile, 'utf-8', function (err, data){
-	if (err) throw err;
-	var charInput = data.split(" ");
-	charInput.forEach(function(d){
-		_input.push(parseInt(d));
-	});
-	
+	//convert file to be a array of integers inserted into _input
+	read_file(_inputFile, _input);
 	//stops the program if the input is not divisible by 9
 	if (_input.length % 9 !== 0) {
     	console.error('Number of integers in input file is not divisible by 9');
     	process.exit(1);
 	}
-	
+	read_file(_testFile, _test);
+
 	console.log(_input);
+	console.log(_test);
+	var temp_schedule = _test[0];
 	Optimize();
-});
+
 
 var _bin1 = [];
 var _bin2 = [];
 var _bin3 = [];
+
+function read_file(file, fileVariable) {
+	//convert file to be a array of integers inserted into _input
+	var contents = fs.readFileSync(file, 'utf-8');
+	var charInput = contents.split(" ");
+	charInput.forEach(function(d){
+		fileVariable.push(parseInt(d));
+	});
+}
 
 function Optimize(){
 	var most_recent_score = 0;
@@ -46,7 +56,7 @@ function Optimize(){
 	PrintBins(true);
 	most_recent_score = TotalScore();
 	console.log("Total Score: " + TotalScore());
-	SimulatedAnnealing(most_recent_score, [_bin1, _bin2, _bin3], 10, -9999);
+	SimulatedAnnealing(most_recent_score, [_bin1, _bin2, _bin3], temp_schedule, -9999);
 }
 
 //randomly assigns numbers to bins
