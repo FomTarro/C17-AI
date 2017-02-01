@@ -1,4 +1,6 @@
 var fs = require('fs');
+var HillClimbing = require('./hill_climbing');
+var GeneticAlgorithm = require('./geneticAlgorithm');
 
 //stops the program if not enough arguments given
 if (process.argv.length !== 5) {
@@ -40,11 +42,29 @@ var _bin3 = [];
 function Optimize(){
 	InitializeBins();
 	PrintBins(true);
+	var binSet = [_bin1, _bin2, _bin3];
+	switch(_optimizeType) {
+		case "hill":
+			var mostRecentScore = TotalScore();
+			HillClimbing(mostRecentScore, _allowedTime, binSet);
+			break;
+		case "annealing":
+			break;
+		case "ga":
+			binSet = GeneticAlgorithm(6, _allowedTime, binSet);
+			break;
+	}
+	_bin1 = binSet[0];
+	_bin2 = binSet[1];
+	_bin3 = binSet[2];
 	console.log("Total Score: " + TotalScore());
 }
 
 //randomly assigns numbers to bins
 function InitializeBins(){
+	_bin1 = [];
+	_bin2 = [];
+	_bin3 = [];
 	var input = _input;
 	var randomIndex;
 	var maxBinLength = _input.length / 3;

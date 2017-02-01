@@ -1,3 +1,8 @@
+var _bin1 = [];
+var _bin2 = [];
+var _bin3 = [];
+
+
 var fs = require('fs');
 
 //stops the program if not enough arguments given
@@ -15,6 +20,8 @@ var _allowedTime = process.argv[4];
 
 var _input = [];
 
+var counter = 0;
+
 //convert file to be a array of integers inserted into _input
 fs.readFile(_inputFile, 'utf-8', function (err, data){
 	if (err) throw err;
@@ -29,13 +36,9 @@ fs.readFile(_inputFile, 'utf-8', function (err, data){
     	process.exit(1);
 	}
 	
-	console.log(_input);
-	Optimize();
+	//console.log(_input);
+	//Optimize();
 });
-
-var _bin1 = [];
-var _bin2 = [];
-var _bin3 = [];
 
 function Optimize(){
 	InitializeBins();
@@ -179,7 +182,7 @@ function TotalScore(){
 	return parseInt(ScoreBin(1)) + parseInt(ScoreBin(2)) + parseInt(ScoreBin(3));
 }
 
-function RunGeneticAlgorithm(startingPop) {
+function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
 
     var mutations = 0;
     var culls = 0;
@@ -188,17 +191,14 @@ function RunGeneticAlgorithm(startingPop) {
 
     var probability = GenerateProbability(8);  //1 in 8 chance of mutating
 
-    var population = [
-        [
-            _bin1, _bin2, _bin3
-        ]
-    ]
-   
+    var population = [bins];
     var best = ScoreBins(population[0]);
     var worst = best;
 
     console.log("Starting Score: " + best);
-
+    /**
+     * Populate Gen 0 with states using given # of starting population
+     */
     while(population.length < startingPop) {
         InitializeBins();
         population.push([
@@ -207,8 +207,11 @@ function RunGeneticAlgorithm(startingPop) {
         var newScore = ScoreBins(population[population.length - 1]);
         UpdateScore(newScore, population[population.length - 1]);
     }
-
-    while(generation < 12 || best == 38) {
+    
+    /**
+     * Generate children until we reach 12th generation or our score is greater than 38
+     */
+    while(generation < 12 || best >= 38) {
         //console.log("Generation " + generation);
         var new_population = [];
         for(var i = 0; i < population.length; i++) {
@@ -218,13 +221,14 @@ function RunGeneticAlgorithm(startingPop) {
             var cutPoint = RandomRange(1, binLength - 1);
             //randomly select y
             var y = Select(x);
+            //Reproduce & score the children
             var childA = Reproduce(x, y, binLength, cutPoint);
             var scoreA = ScoreBins(childA);
             var childB = Reproduce(y, x, binLength, cutPoint);
             var scoreB = ScoreBins(childB);
-            //add child to new population
             //console.log(childA + ", Score: " + scoreA);
             //console.log(childB + ", Score: " + scoreB);
+            //add child to new population
             //Cull worsts
             if(UpdateScore(scoreA, childA)) new_population.push(childA);
             if(UpdateScore(scoreB, childB)) new_population.push(childB);
@@ -243,10 +247,17 @@ function RunGeneticAlgorithm(startingPop) {
     console.log("Top Pool: " + topPopLength);
     console.log("Population: " + population.length);
     console.log("Mutations: " + mutations);
-    return best;
+    return [_bin1, _bin2, _bin3];
 
     /*************************** LOCAL FUNCTIONS USED BY GA ***************************/
 
+    /**
+     * Generates a child given 2 parents and a cut point
+     * x - Parent A
+     * y - Parent B
+     * n - Max length per bin
+     * c - Cutpoint
+     */
     function Reproduce(x, y, n, c) {
         //x, y are inputs
         //n = length of x, c = random number from 1 to n
@@ -267,6 +278,10 @@ function RunGeneticAlgorithm(startingPop) {
         return child;
     }
 
+    /**
+     * Selects a random state from population.
+     * prevSelected - if this parameter is provided, then Select will return a state different from this
+     */
     function Select(prevSelected) {
         var random = -1;
         if(prevSelected !== undefined)
@@ -278,6 +293,10 @@ function RunGeneticAlgorithm(startingPop) {
         return population[random];
     }
 
+    /**
+     * Mutates the given state
+     * Swaps 2 values on from any of the bins
+     */
     function Mutate(item) {
         mutations++;
         var x1, y1, x2, y2;
@@ -295,6 +314,9 @@ function RunGeneticAlgorithm(startingPop) {
         return item;
     }
 
+    /**
+     * Generates an array from 0 - denom for probability checking
+     */
     function GenerateProbability(denom) {
         var bag = [];
         for(var i = 0; i < denom; i++)
@@ -302,6 +324,11 @@ function RunGeneticAlgorithm(startingPop) {
         return bag;
     }
 
+    /**
+     * Returns true if given state is better than worst
+     *   * Updates the score + bins if better than best
+     * Returns false if given state is worse than current worst
+     */
     function UpdateScore(newScore, bins) {
         if(newScore > best) {
             best = newScore;
@@ -323,7 +350,12 @@ function RunGeneticAlgorithm(startingPop) {
     }
 }
 
+/**
+ * Returns random int value given a range
+ */
 function RandomRange(min, max) {
     if(min > max) return min;
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
+
+module.exports = RunGeneticAlgorithm;

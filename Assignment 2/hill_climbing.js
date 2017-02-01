@@ -33,7 +33,7 @@ fs.readFile(_inputFile, 'utf-8', function (err, data){
 	}
 	
 	console.log(_input);
-	Optimize();
+	//Optimize();
 });
 
 var _bin1 = [];
@@ -143,7 +143,7 @@ function TotalScore(){
 	return parseInt(totalScore);
 }
 
-function HillClimbing(currBestScore, bins)
+function HillClimbing(currBestScore, allowedTime, bins)
 {
 	// generate a new set of bins from the same input file
 	currBestScore = parseInt(currBestScore);
@@ -170,7 +170,7 @@ function HillClimbing(currBestScore, bins)
 						if (new_score > currBestScore && counter <= 100)
 						{
 							curr_best_score = new_score;
-							return HillClimbing(parseInt(curr_best_score), bins);
+							return HillClimbing(parseInt(curr_best_score), allowedTime, bins);
 						}
 						
 						counter++;
@@ -187,3 +187,5 @@ function HillClimbing(currBestScore, bins)
 	console.log("Best Solution: " + currBestScore);
 	return currBestScore;
 }
+
+module.exports = HillClimbing;
