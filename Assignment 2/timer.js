@@ -3,6 +3,10 @@ function Timer(time){
     this.maxTime = time;
     this.currentTime = 0;
 
+    this.timeLeft = function(){
+        return maxTime - currentTime;
+    }
+
     // assign a function that should occur on time expiration
     this.onExpire = function(){
         console.log("timer has expired!")
