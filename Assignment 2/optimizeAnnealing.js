@@ -205,19 +205,6 @@ function SimulatedAnnealing(currBestScore, bins, temperature, prevScore)
 							return SimulatedAnnealing(currBestScore, bins, temperature - 1, new_score);	
 						}
 					}
-					else{
-						console.log("Restart");
-						InitializeBins();
-						PrintBins(true);
-						console.log("Total Score: " + TotalScore());
-						if (new_score > currBestScore) {
-							return SimulatedAnnealing(new_score, bins, 10, -9999);	
-						}
-						else
-						{
-							return SimulatedAnnealing(currBestScore, bins, 10, -9999);	
-						}
-					}
 
 					bins[k][l] = bins[i][j];
 					bins[i][j] = targetValue;
