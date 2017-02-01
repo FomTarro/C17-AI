@@ -1,6 +1,5 @@
+
 var fs = require('fs');
-var HillClimbing = require('./hill_climbing');
-var GeneticAlgorithm = require('./geneticAlgorithm');
 
 //stops the program if not enough arguments given
 if (process.argv.length !== 5) {
@@ -17,6 +16,8 @@ var _allowedTime = process.argv[4];
 
 var _input = [];
 
+var counter = 0;
+
 //convert file to be a array of integers inserted into _input
 fs.readFile(_inputFile, 'utf-8', function (err, data){
 	if (err) throw err;
@@ -32,7 +33,7 @@ fs.readFile(_inputFile, 'utf-8', function (err, data){
 	}
 	
 	console.log(_input);
-	Optimize();
+	//Optimize();
 });
 
 var _bin1 = [];
@@ -40,24 +41,12 @@ var _bin2 = [];
 var _bin3 = [];
 
 function Optimize(){
+	var most_recent_score = 0;
 	InitializeBins();
 	PrintBins(true);
-	var binSet = [_bin1, _bin2, _bin3];
-	switch(_optimizeType) {
-		case "hill":
-			var mostRecentScore = TotalScore();
-			HillClimbing(mostRecentScore, _allowedTime, binSet);
-			break;
-		case "annealing":
-			break;
-		case "ga":
-			binSet = GeneticAlgorithm(6, _allowedTime, binSet);
-			break;
-	}
-	_bin1 = binSet[0];
-	_bin2 = binSet[1];
-	_bin3 = binSet[2];
+	most_recent_score = TotalScore();
 	console.log("Total Score: " + TotalScore());
+	HillClimbing(most_recent_score, [_bin1, _bin2, _bin3]);
 }
 
 //randomly assigns numbers to bins
@@ -150,5 +139,53 @@ function ScoreBin(binNum){
 
 //returns total score of all bins
 function TotalScore(){
-	return parseInt(ScoreBin(1)) + parseInt(ScoreBin(2)) + parseInt(ScoreBin(3));
+	totalScore = parseInt(ScoreBin(1)) + parseInt(ScoreBin(2)) + parseInt(ScoreBin(3));
+	return parseInt(totalScore);
 }
+
+function HillClimbing(currBestScore, allowedTime, bins)
+{
+	// generate a new set of bins from the same input file
+	currBestScore = parseInt(currBestScore);
+	
+	counter = 0;
+	
+	for(var i = 0; i < _input.length / 3; i++){
+		for(var j = 0; j < 3; j++){
+			for(var k = 0; k < _input.length / 3; k++){
+				for(var l = 0; l < 3; l++){
+					if(i !== k || j !== l){
+						targetValue = bins[i][j];
+						bins[i][j] = bins[k][l];
+						bins[k][l] = targetValue;
+						
+						
+						//PrintBins(true);
+						var curr_best_score = 0;
+						var new_score = 0;
+						new_score = TotalScore();
+						//console.log("Last Total Score: " + parseInt(new_score));
+						// allow 100 iterations for correct solution
+						// if the current score is better than the last one, continue
+						if (new_score > currBestScore && counter <= 100)
+						{
+							curr_best_score = new_score;
+							return HillClimbing(parseInt(curr_best_score), allowedTime, bins);
+						}
+						
+						counter++;
+						
+						bins[k][l] = bins[i][j];
+						bins[i][j] = targetValue;
+					}
+				}
+			}
+		}
+	}
+	
+	PrintBins(true);
+	console.log("Best Solution: " + currBestScore);
+	return currBestScore;
+}
+
+module.exports = HillClimbing;
