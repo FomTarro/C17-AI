@@ -6,40 +6,7 @@ var _bin3 = [];
 var fs = require('fs');
 var Timer = require('./timer');
 
-//stops the program if not enough arguments given
-if (process.argv.length !== 5) {
-    console.error('Exactly two arguments required');
-    console.error('node optimize.js <optimization type> <input file>.txt <allowed time>');
-    process.exit(1);
-}
-
-var _optimizeType = process.argv[2];
-
-var _inputFile = process.argv[3];
-
-var _allowedTime = parseFloat(process.argv[4]);
-
 var _input = [];
-
-var counter = 0;
-
-//convert file to be a array of integers inserted into _input
-fs.readFile(_inputFile, 'utf-8', function (err, data){
-	if (err) throw err;
-	var charInput = data.split(" ");
-	charInput.forEach(function(d){
-		_input.push(parseInt(d));
-	});
-	
-	//stops the program if the input is not divisible by 9
-	if (_input.length % 9 !== 0) {
-    	console.error('Number of integers in input file is not divisible by 9');
-    	process.exit(1);
-	}
-	
-	//console.log(_input);
-	//Optimize();
-});
 
 function Optimize(){
 	InitializeBins();
@@ -183,7 +150,9 @@ function TotalScore(){
 	return parseInt(ScoreBin(1)) + parseInt(ScoreBin(2)) + parseInt(ScoreBin(3));
 }
 
-function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
+function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
+
+    _input = input;
 
     var mutations = 0;
     var culls = 0;
@@ -281,6 +250,24 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
         var sideB3 = y[2].slice(c, n);
         var child = [sideA1.concat(sideB1), sideA2.concat(sideB2), sideA3.concat(sideB3)];
         //check if child has duplicates
+        var inputValues = _input.slice(0);
+        var missing = [];
+        child.forEach(function(row, rowIndex) {
+            row.forEach(function(value, colIndex){
+                if(inputValues.includes(value)) {
+                    inputValues.splice(inputValues.indexOf(value), 1);
+                } else {
+                    missing.push({row: rowIndex, col: colIndex});
+                }
+            })
+        })
+
+        while(missing.length > 0) {
+            var state = missing.shift();
+            var random = RandomRange(0, inputValues.length - 1);
+            child[state.row][state.col] = inputValues[random];
+            inputValues.splice(random, 1);
+        }
         //if small random probability, then mutate child
         if(RandomRange(0, probability.length) == 0) {
             Mutate(child);

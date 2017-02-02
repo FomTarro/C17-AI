@@ -51,7 +51,7 @@ function Optimize(){
 		case "annealing":
 			break;
 		case "ga":
-			binSet = GeneticAlgorithm(50, _allowedTime, binSet);
+			binSet = GeneticAlgorithm(75, _allowedTime, binSet, _input);
 			break;
 	}
 	_bin1 = binSet[0];
