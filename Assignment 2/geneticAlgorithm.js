@@ -4,6 +4,7 @@ var _bin3 = [];
 
 
 var fs = require('fs');
+var Timer = require('./timer');
 
 //stops the program if not enough arguments given
 if (process.argv.length !== 5) {
@@ -16,7 +17,7 @@ var _optimizeType = process.argv[2];
 
 var _inputFile = process.argv[3];
 
-var _allowedTime = process.argv[4];
+var _allowedTime = parseFloat(process.argv[4]);
 
 var _input = [];
 
@@ -186,6 +187,7 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
 
     var mutations = 0;
     var culls = 0;
+    var genCulls = 0;
     var topPopLength= 0;
     var generation = 0;
 
@@ -194,6 +196,7 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
     var population = [bins];
     var best = ScoreBins(population[0]);
     var worst = best;
+    var genWorst = worst;
 
     console.log("Starting Score: " + best);
     /**
@@ -207,13 +210,17 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
         var newScore = ScoreBins(population[population.length - 1]);
         UpdateScore(newScore, population[population.length - 1]);
     }
-    
     /**
      * Generate children until we reach 12th generation or our score is greater than 38
      */
-    while(generation < 12 || best >= 38) {
+    var keepGoing = true
+    var elitismPercentage = 0.1;
+    while(keepGoing) {
+        //console.log("GENERATION: " + generation)
+        //console.log(gaTimer.timeLeft());
         //console.log("Generation " + generation);
         var new_population = [];
+        genCulls = 0;    
         for(var i = 0; i < population.length; i++) {
             //randomly select x
             var x = Select();
@@ -236,10 +243,15 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
         population.sort(function(a, b) {
             return ScoreBins(b) - ScoreBins(a);
         });
-        //Keep at most 10% best in the pool
-        topPopLength = Math.ceil(population.length * 0.02);
-        var topPop = population.slice(0, topPopLength);
-        population = new_population.concat(topPop);
+        populationCutoff = Math.floor((population.length * elitismPercentage));
+        population = population.slice(0, populationCutoff);
+
+        population = new_population.concat(population);
+        population.sort(function(a, b) {
+            return ScoreBins(b) - ScoreBins(a);
+        });
+        populationCutoff = (population.length > 5000) ? 5000 : Math.floor(population.length/2);
+        population = population.slice(0, populationCutoff);
         //if an individual is fit enough or x amount of time has elapsed, break
         generation++;
     }
@@ -267,10 +279,8 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
         var sideB1 = y[0].slice(c, n);
         var sideB2 = y[1].slice(c, n);
         var sideB3 = y[2].slice(c, n);
-        var c1 = sideA1.concat(sideB1);
-        var c2 = sideA2.concat(sideB2);
-        var c3 = sideA3.concat(sideB3);
-        var child = [c1, c2, c3];
+        var child = [sideA1.concat(sideB1), sideA2.concat(sideB2), sideA3.concat(sideB3)];
+        //check if child has duplicates
         //if small random probability, then mutate child
         if(RandomRange(0, probability.length) == 0) {
             Mutate(child);
@@ -284,12 +294,22 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
      */
     function Select(prevSelected) {
         var random = -1;
-        if(prevSelected !== undefined)
+        var probability = 0;
+        var randomProb = 0;
+        if(prevSelected !== undefined) {
             do {
                 random = RandomRange(0, population.length - 1);
-            } while(population[random] === prevSelected);
-        else
-            random = RandomRange(0, population.length - 1);
+                probability = (population.length - random) / population.length;
+                randomProb = RandomRange(0, 1);
+            } while(population[random] === prevSelected && probability > randomProb);
+        }
+        else {
+            do {
+                random = RandomRange(0, population.length - 1);
+                probability = (population.length - random) / population.length;
+                randomProb = RandomRange(0, 1);
+            } while(probability > randomProb);
+        }
         return population[random];
     }
 
@@ -342,8 +362,9 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins) {
         else if(newScore <= best && newScore > worst) {
             return true;
         } 
-        else if(newScore < worst){
+        else if(newScore <= worst){
             culls++;
+            genCulls++;
             worst = newScore;
             return false;
         }
