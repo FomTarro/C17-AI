@@ -191,9 +191,11 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
     /**
      * Generate children until we reach 12th generation or our score is greater than 38
      */
-    var keepGoing = true
     var elitismPercentage = 0.1;
-    while(keepGoing) {
+    var totalRuntime = 0;
+    var deltaTime = 0;
+    while(deltaTime < (allowedTime*1000 - totalRuntime)) {
+        var timeAtStart = Date.now();
         //console.log("GENERATION: " + generation)
         //console.log(gaTimer.timeLeft());
         //console.log("Generation " + generation);
@@ -232,6 +234,9 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
         population = population.slice(0, populationCutoff);
         //if an individual is fit enough or x amount of time has elapsed, break
         generation++;
+        var timeAtEnd = Date.now();
+        deltaTime = timeAtEnd - timeAtStart;
+        totalRuntime = totalRuntime + deltaTime;
     }
     console.log("Culls: " + culls)
     console.log("Top Pool: " + topPopLength);
