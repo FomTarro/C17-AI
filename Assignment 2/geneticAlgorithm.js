@@ -159,6 +159,8 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
     var genCulls = 0;
     var topPopLength= 0;
     var generation = 0;
+    var StateDictionary = {};
+    var hashCutoff = 5;
 
     var probability = GenerateProbability(8);  //1 in 8 chance of mutating
 
@@ -167,15 +169,22 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
     var worst = best;
     var genWorst = worst;
 
+    StateDictionary[key(bins)] = 1;
+
     console.log("Starting Score: " + best);
     /**
      * Populate Gen 0 with states using given # of starting population
      */
     while(population.length < startingPop) {
-        InitializeBins();
+        var hash = "";
+        do {
+            InitializeBins();
+            hash = key([_bin1, _bin2, _bin3]);
+        } while(StateDictionary[hash] != undefined);
         population.push([
             _bin1, _bin2, _bin3
-        ])
+        ]);
+        StateDictionary[hash] = 1;
         var newScore = ScoreBins(population[population.length - 1]);
         UpdateScore(newScore, population[population.length - 1]);
     }
@@ -231,6 +240,16 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
     return [_bin1, _bin2, _bin3];
 
     /*************************** LOCAL FUNCTIONS USED BY GA ***************************/
+
+    function key(bins) {
+        var hash = "";
+        bins.forEach(function(row){
+            row.forEach(function(value){
+                hash += value.toString();
+            })
+        })
+        return hash;
+    }
 
     /**
      * Generates a child given 2 parents and a cut point
@@ -337,16 +356,27 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
      * Returns false if given state is worse than current worst
      */
     function UpdateScore(newScore, bins) {
+        if(StateDictionary[key(bins)] > hashCutoff || StateDictionary[key(bins) == undefined]) {
+            return false;
+        }
         if(newScore > best) {
             best = newScore;
             _bin1 = bins[0];
             _bin2 = bins[1];
             _bin3 = bins[2];
             console.log("New Best: " + best + " at gen " + generation);
-            PrintBins(true);
+            PrintBins(true);        
+            if(StateDictionary[key(bins)] == undefined)
+                StateDictionary[key(bins)] = 1;
+            else
+                StateDictionary[key(bins)]++;
             return true;
         }
         else if(newScore <= best && newScore > worst) {
+            if(StateDictionary[key(bins)] == undefined)
+                StateDictionary[key(bins)] = 1;
+            else
+                StateDictionary[key(bins)]++;
             return true;
         } 
         else if(newScore <= worst){
