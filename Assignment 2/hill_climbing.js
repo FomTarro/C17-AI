@@ -1,13 +1,6 @@
 
 var fs = require('fs');
 
-//stops the program if not enough arguments given
-if (process.argv.length !== 5) {
-    console.error('Exactly two arguments required');
-    console.error('node optimize.js <optimization type> <input file>.txt <allowed time>');
-    process.exit(1);
-}
-
 var _optimizeType = process.argv[2];
 
 var _inputFile = process.argv[3];
@@ -17,24 +10,6 @@ var _allowedTime = process.argv[4];
 var _input = [];
 
 var counter = 0;
-
-//convert file to be a array of integers inserted into _input
-fs.readFile(_inputFile, 'utf-8', function (err, data){
-	if (err) throw err;
-	var charInput = data.split(" ");
-	charInput.forEach(function(d){
-		_input.push(parseInt(d));
-	});
-	
-	//stops the program if the input is not divisible by 9
-	if (_input.length % 9 !== 0) {
-    	console.error('Number of integers in input file is not divisible by 9');
-    	process.exit(1);
-	}
-	
-	console.log(_input);
-	//Optimize();
-});
 
 var _bin1 = [];
 var _bin2 = [];
@@ -73,6 +48,47 @@ function InitializeBins(){
 		input = input.slice(0, randomIndex).concat(input.slice(randomIndex + 1));
 	}
 }
+
+//returns total score of bins
+function ScoreBins(binList){
+	var score = 0;
+    var multiplier = 1;
+    var s1 = 0, s2 = 0, s3 = 0;
+    binList[0].forEach(function(d){
+        s1 += parseInt(d) * multiplier;
+        multiplier = multiplier * (-1);
+    });
+    for(var i = 1; i < binList[1].length; i++){
+        if(binList[1][i] > binList[1][i - 1])
+            s2 += 3;
+        else if(binList[1][i] == binList[1][i - 1])
+            s2 += 5;
+        else if(binList[1][i] < binList[1][i - 1])
+            s2 -= 10;
+    }
+    var half1 = binList[2].slice(0, Math.floor(binList[2].length / 2));
+    var half2 = binList[2].slice(Math.ceil(binList[2].length / 2));
+    
+    half1.forEach(function(d){
+        if(d == 2 || d == 3 || d == 5 || d == 7)
+            s3 += 4;
+        else if(d < 0)
+            s3 -= 2;
+        else
+            s3 -= parseInt(d);
+    });
+    
+    half2.forEach(function(d){
+        if(d == 2 || d == 3 || d == 5 || d == 7)
+            s3 -= 4;
+        else if(d < 0)
+            s3 += 2;
+        else
+            s3 += parseInt(d);
+    });
+	return s1 + s2 + s3;
+}
+
 
 //print bins and their scores if showScores is true
 function PrintBins(showScores){
@@ -143,13 +159,22 @@ function TotalScore(){
 	return parseInt(totalScore);
 }
 
-function HillClimbing(currBestScore, allowedTime, bins)
+var totalRuntime = 0;
+var deltaTime = 0;
+function HillClimbing(currBestScore, allowedTime, bins, input)
 {
+	var timeAtStart = Date.now();
+	if((allowedTime > 0)) {
+		return curr_best_score;
+	}
+	_bin1 = bins[0];
+	_bin2 = bins[1];
+	_bin3 = bins[2];
+	_input = input;
 	// generate a new set of bins from the same input file
 	currBestScore = parseInt(currBestScore);
-	
 	counter = 0;
-	
+	console.log("Date: " + timeAtStart);
 	for(var i = 0; i < _input.length / 3; i++){
 		for(var j = 0; j < 3; j++){
 			for(var k = 0; k < _input.length / 3; k++){
@@ -158,23 +183,28 @@ function HillClimbing(currBestScore, allowedTime, bins)
 						targetValue = bins[i][j];
 						bins[i][j] = bins[k][l];
 						bins[k][l] = targetValue;
-						
-						
+			
 						//PrintBins(true);
 						var curr_best_score = 0;
 						var new_score = 0;
-						new_score = TotalScore();
+
+						new_score = ScoreBins(bins);
 						//console.log("Last Total Score: " + parseInt(new_score));
 						// allow 100 iterations for correct solution
 						// if the current score is better than the last one, continue
-						if (new_score > currBestScore && counter <= 100)
-						{
-							curr_best_score = new_score;
-							return HillClimbing(parseInt(curr_best_score), allowedTime, bins);
+						if (new_score > currBestScore && counter <= 100) {
+							curr_best_score = new_score;			
+							var timeAtEnd = Date.now();
+							deltaTime = timeAtEnd - timeAtStart;
+							totalRuntime = totalRuntime + deltaTime;
+							return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
+						} else {
+							InitializeBins();
+							var initScore = TotalScore();
+							return HillClimbing(parseInt(initScore), (allowedTime - deltaTime), bins, _input);	
 						}
 						
 						counter++;
-						
 						bins[k][l] = bins[i][j];
 						bins[i][j] = targetValue;
 					}

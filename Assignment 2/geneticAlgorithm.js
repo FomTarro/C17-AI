@@ -162,7 +162,7 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
     var StateDictionary = {};
     var hashCutoff = 5;
 
-    var probability = GenerateProbability(8);  //1 in 8 chance of mutating
+    var probability = GenerateProbability(2);  //1 in 8 chance of mutating
 
     var population = [bins];
     var best = ScoreBins(population[0]);
@@ -196,9 +196,6 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
     var deltaTime = 0;
     while(deltaTime < (allowedTime*1000 - totalRuntime)) {
         var timeAtStart = Date.now();
-        //console.log("GENERATION: " + generation)
-        //console.log(gaTimer.timeLeft());
-        //console.log("Generation " + generation);
         var new_population = [];
         genCulls = 0;    
         for(var i = 0; i < population.length; i++) {
@@ -230,7 +227,7 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
         population.sort(function(a, b) {
             return ScoreBins(b) - ScoreBins(a);
         });
-        populationCutoff = (population.length > 5000) ? 5000 : Math.floor(population.length/2);
+        populationCutoff = (population.length > 10000) ? 10000 : Math.ceil(population.length);
         population = population.slice(0, populationCutoff);
         //if an individual is fit enough or x amount of time has elapsed, break
         generation++;
@@ -238,6 +235,7 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
         deltaTime = timeAtEnd - timeAtStart;
         totalRuntime = totalRuntime + deltaTime;
     }
+    console.log("Stopped at Generation: " + generation);
     console.log("Culls: " + culls)
     console.log("Top Pool: " + topPopLength);
     console.log("Population: " + population.length);

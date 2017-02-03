@@ -46,12 +46,13 @@ function Optimize(){
 	switch(_optimizeType) {
 		case "hill":
 			var mostRecentScore = TotalScore();
-			HillClimbing(mostRecentScore, _allowedTime, binSet);
+			HillClimbing(mostRecentScore, _allowedTime * 1000, binSet, _input);
 			break;
 		case "annealing":
+
 			break;
 		case "ga":
-			binSet = GeneticAlgorithm(50, _allowedTime, binSet, _input);
+			binSet = GeneticAlgorithm(20, _allowedTime, binSet, _input);
 			break;
 	}
 	_bin1 = binSet[0];
