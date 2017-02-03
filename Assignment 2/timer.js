@@ -1,7 +1,18 @@
 // Timer class. Accepts the maximum timer length in milliseconds as the constructor argument
-function Timer(time){
-    this.maxTime = time;
-    this.currentTime = 0;
+function Timer(time){ 
+
+    var startingTime = 0;
+    var maxTime = time;
+    var currentTime = 0;
+
+    var refire;
+
+    this.getCurrentTime = function() {
+        return currentTime;
+    }
+    this.getMaxTime = function() {
+        return maxTime;
+    }
 
     this.timeLeft = function(){
         return maxTime - currentTime;
@@ -14,27 +25,21 @@ function Timer(time){
 
     // call to start the timer tick with a 1ms refire interval
     this.startTick = function(){
-        var startingTime =  Date.now();
-        var refire = this.setInterval(
-            function(){
-                currentTime = Date.now() - startingTime;
-                if(currentTime >= maxTime){
-                    clearInterval(refire);
-                    onExpire();
-                }
-                return;
-            }, 1);
+        startingTime = Date.now();
+        setInterval(tick, 10);
         return;
     }
-return this;
+
+    function tick() {
+        console.log("tick");
+        currentTime = Date.now() - startingTime;
+        if(currentTime >= maxTime){
+            clearInterval(refire);
+            onExpire();
+        }
+    }
+
+    return this;
 }
 
-// EXAMPLE IMPLEMENTATION //
-
-var timer = Timer(1000);
-timer.onExpire = function(){
-    console.log("an alternate expiration message!");
-}
-timer.startTick();
-console.log("this timer isn't hogging the thread!");
-
+module.exports = Timer;
