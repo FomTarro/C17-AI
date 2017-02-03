@@ -2,9 +2,9 @@
 var fs = require('fs');
 
 //stops the program if not enough arguments given
-if (process.argv.length !== 6) {
+if (process.argv.length !== 5) {
     console.error('Exactly two arguments required');
-    console.error('node optimize.js <optimization type> <input file>.txt <allowed time> test.txt');
+    console.error('node optimize.js <optimization type> <input file>.txt <allowed time>');
     process.exit(1);
 }
 
@@ -14,49 +14,36 @@ var _inputFile = process.argv[3];
 
 var _allowedTime = process.argv[4];
 
-var _testFile = process.argv[5];
-
 var _input = [];
-
-var _test = [];
 
 var counter = 0;
 
-	//convert file to be a array of integers inserted into _input
-	read_file(_inputFile, _input);
-	//stops the program if the input is not divisible by 9
-	if (_input.length % 9 !== 0) {
-    	console.error('Number of integers in input file is not divisible by 9');
-    	process.exit(1);
-	}
-	read_file(_testFile, _test);
+var theBestScore;
+var theTemp = 100;
 
-	console.log(_input);
-	console.log(_test);
-	var temp_schedule = _test[0];
+//convert file to be a array of integers inserted into _input
+fs.readFile(_inputFile, 'utf-8', function (err, data){
+	if (err) throw err;
+	var charInput = data.split(" ");
+	charInput.forEach(function(d){
+		_input.push(parseInt(d));
+	});
 	Optimize();
+});
 
 
 var _bin1 = [];
 var _bin2 = [];
 var _bin3 = [];
 
-function read_file(file, fileVariable) {
-	//convert file to be a array of integers inserted into _input
-	var contents = fs.readFileSync(file, 'utf-8');
-	var charInput = contents.split(" ");
-	charInput.forEach(function(d){
-		fileVariable.push(parseInt(d));
-	});
-}
-
 function Optimize(){
 	var most_recent_score = 0;
 	InitializeBins();
 	PrintBins(true);
 	most_recent_score = TotalScore();
+	theBestScore = TotalScore();
 	console.log("Total Score: " + TotalScore());
-	SimulatedAnnealing(most_recent_score, [_bin1, _bin2, _bin3], temp_schedule, -9999);
+	SimulatedAnnealing(most_recent_score, [_bin1, _bin2, _bin3], theTemp, -9999);
 }
 
 //randomly assigns numbers to bins
@@ -155,13 +142,19 @@ function TotalScore(){
 
 function SimulatedAnnealing(currBestScore, bins, temperature, prevScore)
 {
+	//console.log("Best: " + currBestScore + " Temp: " + temperature + " Prev Score: " + prevScore);
+	//PrintBins(true);
 	// generate a new set of bins from the same input file
 	currBestScore = parseInt(currBestScore);
 	
 	var i = 0;
 	var j = 0;
+	var k = 0;
+	var l = 0;
 	var nodes = [];
 	var options = [];
+	
+	var restart = 0;
 	
 	for(var a = 0; a < _input.length; a++){
 		options.push(a + 1);
@@ -172,58 +165,69 @@ function SimulatedAnnealing(currBestScore, bins, temperature, prevScore)
 		nodes.push(options.slice(randomIndex, randomIndex + 1));
 		options = options.slice(0, randomIndex).concat(options.slice(randomIndex + 1));
 	}
-	
-	for(var h = 0; h < _input.length; h++){
-		i = Math.floor((nodes[h] - 1) / (_input.length / 3));
-		j = nodes[h] % (_input.length / 3);
-		
-		for (var k = 0; k < _input.length / 3; k++) {
-			for (var l = 0; l < 3; l++) {
-				if (i !== k || j !== l) {
-					targetValue = bins[i][j];
-					bins[i][j] = bins[k][l];
-					bins[k][l] = targetValue;
 
-					var curr_best_score = 0;
-					var new_score = 0;
-					new_score = TotalScore();
+	var tryNodes = [];
+	var tryOptions = [];
 
-					// allow 100 iterations for correct solution
-					// if the current score is better than the last one, continue
-					/*if (new_score > currBestScore) {
-						curr_best_score = new_score;
-					}*/
-					
-					if(temperature == 0){
-						console.log("Best Solution: " + currBestScore);
-						return currBestScore;
-					}
-					
-					if(new_score - prevScore > 0){
-						if (new_score > currBestScore) {
-							return SimulatedAnnealing(new_score, bins, temperature, new_score);	
-						}
-						else {
-							return SimulatedAnnealing(currBestScore, bins, temperature, new_score);	
-						}
-					}
-					else if(Math.exp((new_score - prevScore) / temperature) > Math.random()){
-						if (new_score > currBestScore) {
-							return SimulatedAnnealing(new_score, bins, temperature - 1, new_score);	
-						}
-						else {
-							return SimulatedAnnealing(currBestScore, bins, temperature - 1, new_score);	
-						}
-					}
+	for (var b = 0; b < _input.length; b++) {
+		tryOptions.push(b + 1);
+	}
 
-					bins[k][l] = bins[i][j];
-					bins[i][j] = targetValue;
-				}
-			}
-		}
+	while (tryOptions.length > 0) {
+		randomIndex = Math.floor(Math.random() * tryOptions.length);
+		tryNodes.push(tryOptions.slice(randomIndex, randomIndex + 1));
+		tryOptions = tryOptions.slice(0, randomIndex).concat(tryOptions.slice(randomIndex + 1));
+	}
+
+	while(i == k && j == l){
+		i = Math.floor((nodes[Math.floor(Math.random() * 3)] - 1) / (_input.length / 3));
+		j = nodes[Math.floor(Math.random() * (_input.length / 3))] % (_input.length / 3);
+		k = Math.floor((nodes[Math.floor(Math.random() * 3)] - 1) / (_input.length / 3));
+		l = nodes[Math.floor(Math.random() * (_input.length / 3))] % (_input.length / 3);
+	}
+
+	targetValue = bins[i][j];
+	bins[i][j] = bins[k][l];
+	bins[k][l] = targetValue;
+
+	var new_score = 0;
+	new_score = TotalScore();
+
+	if (temperature == 0) {
+		console.log("Best Solution: " + currBestScore);
+		return 0;
 	}
 	
-	PrintBins(true);
+	//console.log("New Score: " + new_score);
+
+	if (new_score - prevScore > 0) {
+		//console.log("Going Up");
+		if (new_score > currBestScore) {
+			theBestScore = new_score;
+			restart = SimulatedAnnealing(new_score, bins, temperature, new_score);
+		} else {
+			restart = SimulatedAnnealing(currBestScore, bins, temperature, new_score);
+		}
+	} else if (Math.exp((new_score - prevScore) / temperature) > Math.random()) {
+		//console.log("Going down");
+		if (new_score > currBestScore) {
+			theBestScore = new_score;
+			restart = SimulatedAnnealing(new_score, bins, temperature - 1, new_score);
+		} else {
+			restart = SimulatedAnnealing(currBestScore, bins, temperature - 1, new_score);
+		}
+	}
+
+	if(restart == 1){
+		console.log("restart" + temperature);
+		console.log("Current Best: " + currBestScore);
+		InitializeBins();
+		return SimulatedAnnealing(theBestScore, [_bin1, _bin2, _bin3], temperature, currBestScore);
+	}
+	
+	return 1;
+
+	/*PrintBins(true);
 	console.log("Best Solution!!!: " + currBestScore);
-	return currBestScore;
+	return currBestScore;*/
 }
