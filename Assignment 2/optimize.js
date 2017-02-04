@@ -30,9 +30,9 @@ fs.readFile(_inputFile, 'utf-8', function (err, data){
 		_input.push(parseInt(d));
 	});
 	
-	//stops the program if the input is not divisible by 9
-	if (_input.length % 9 !== 0) {
-    	console.error('Number of integers in input file is not divisible by 9');
+	//stops the program if the input is not divisible by 3
+	if (_input.length % 3 !== 0) {
+    	console.error('Number of integers in input file is not divisible by 3');
     	process.exit(1);
 	}
 	
@@ -230,9 +230,9 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 			for(var k = 0; k < _input.length / 3; k++){
 				for(var l = 0; l < 3; l++){
 					if(i !== k || j !== l){
-						targetValue = bins[i][j];
-						bins[i][j] = bins[k][l];
-						bins[k][l] = targetValue;
+						targetValue = bins[j][i];
+						bins[j][i] = bins[l][k];
+						bins[l][k] = targetValue;
 			
 						//PrintBins(true);
 						var curr_best_score = 0;
@@ -252,8 +252,8 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 							return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
 						}
 
-						bins[k][l] = bins[i][j];
-						bins[i][j] = targetValue;
+						bins[l][k] = bins[j][i];
+						bins[j][i] = targetValue;
 
 					}
 				}
