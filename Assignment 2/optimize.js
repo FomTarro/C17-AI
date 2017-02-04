@@ -52,7 +52,7 @@ function Optimize(){
 	switch(_optimizeType) {
 		case "hill":
 			var mostRecentScore = TotalScore();
-			HillClimbing(mostRecentScore, _allowedTime * 1000, binSet, _input);
+			HillClimbing(mostRecentScore, _allowedTime, binSet, _input);
 			_bin1 = binSet[0];
 			_bin2 = binSet[1];
 			_bin3 = binSet[2];
@@ -227,13 +227,20 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 	// generate a new set of bins from the same input file
 	currBestScore = parseInt(currBestScore);
 	while(allowedTime > 0){
-	var timeAtStart = Date.now();
+	var loopTime = 0;
 			//console.log("Date: " + timeAtStart);
 		for(var i = 0; i < _input.length / 3; i++){
 			for(var j = 0; j < 3; j++){
 				for(var k = 0; k < _input.length / 3; k++){
 					for(var l = 0; l < 3; l++){
 						// timeAtStart = Date.now();
+						if (allowedTime <= 0)
+						{
+							return currBestScore;
+						}
+						var forLoopStart = process.uptime();
+						var forLoopEnd = 0;
+						var deltaTime = 0;
 						if(i !== k || j !== l){
 							targetValue = bins[j][i];
 							bins[j][i] = bins[l][k];
@@ -250,41 +257,48 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 							// if the current score is better than the last one, continue
 							if (new_score > currBestScore && counter <= 100) {
 								//curr_best_score = new_score;
+								forLoopEnd = process.uptime();
+								deltaTime = forLoopEnd - forLoopStart;
+								allowedTime = allowedTime - deltaTime;
+								console.log(allowedTime);
 								currBestScore = new_score;
 								// timeAtEnd = Date.now();
 								// deltaTime = timeAtEnd - timeAtStart;
 								// totalRuntime = totalRuntime + deltaTime;
 								continue;
+								
 								//return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
 							}
 							// else if (allowedTime <= 0)
 							// {
 							// 	continue;
 							// }
+
 							else if (counter > 100)
 							{
+								forLoopStart = process.uptime();
 								InitializeBins();
+								forLoopEnd = process.uptime();
+								deltaTime = forLoopEnd - forLoopStart;
+								allowedTime = allowedTime - deltaTime;
+								console.log(allowedTime);
 								counter = 0;
 								bins[l][k] = bins[j][i];
 								bins[j][i] = targetValue;
 								// timeAtEnd = Date.now();
 								// deltaTime = timeAtEnd - timeAtStart;
 								// allowedTime = allowedTime - deltaTime;
-								continue;
-								if (allowedTime <= 0)
-								{
-									break;
-								}
 								//return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
+							}
+							else
+							{
+								forLoopEnd = process.uptime();
+								deltaTime = forLoopEnd - forLoopStart;
+								allowedTime = allowedTime - deltaTime;
 							}
 
 							bins[l][k] = bins[j][i];
 							bins[j][i] = targetValue;
-							continue;
-							if (allowedTime <= 0)
-							{
-								break;
-							}
 
 						}
 					}
@@ -293,10 +307,10 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 		}
 
 		InitializeBins();
-		var timeAtEnd = Date.now();
-		deltaTime = timeAtEnd - timeAtStart;
-		allowedTime = allowedTime - deltaTime;
-		console.log(allowedTime);
+		// var timeAtEnd = Date.now();
+		// deltaTime = timeAtEnd - timeAtStart;
+		// allowedTime = allowedTime - deltaTime;
+
 		//console.log("allowed time " + allowedTime);
 	// totalRuntime = totalRuntime + deltaTime;
 		// timeLeft = totalRuntime - allowedTime;
