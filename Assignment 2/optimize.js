@@ -296,6 +296,7 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 		var timeAtEnd = Date.now();
 		deltaTime = timeAtEnd - timeAtStart;
 		allowedTime = allowedTime - deltaTime;
+		console.log(allowedTime);
 		//console.log("allowed time " + allowedTime);
 	// totalRuntime = totalRuntime + deltaTime;
 		// timeLeft = totalRuntime - allowedTime;
