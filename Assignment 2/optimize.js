@@ -45,6 +45,7 @@ var _bin2 = [];
 var _bin3 = [];
 
 function Optimize(){
+	var progstart = Date.now();
 	InitializeBins();
 	PrintBins(true);
 	var binSet = [_bin1, _bin2, _bin3];
@@ -61,10 +62,14 @@ function Optimize(){
 			binSet = GeneticAlgorithm(20, _allowedTime, binSet, _input);
 			break;
 	}
+	var progend = Date.now();
 	_bin1 = binSet[0];
 	_bin2 = binSet[1];
 	_bin3 = binSet[2];
+	PrintBins(true);
 	console.log("Total Score: " + TotalScore());
+	console.log("Program runtime: " + ((progend - progstart)/1000));
+
 }
 
 //randomly assigns numbers to bins
@@ -231,8 +236,6 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 						new_score = ScoreBins(bins);
 
 						counter++;
-						console.log(counter);
-						console.log(allowedTime);
 						//console.log("Last Total Score: " + parseInt(new_score));
 						// allow 100 iterations for correct solution
 						// if the current score is better than the last one, continue
@@ -241,11 +244,7 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 							var timeAtEnd = Date.now();
 							deltaTime = timeAtEnd - timeAtStart;
 							totalRuntime = totalRuntime + deltaTime;
-							console.log("time "+ totalRuntime);
 							return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
-						}
-						else if (allowedTime <= 0){
-							break;
 						}
 
 						bins[k][l] = bins[i][j];
@@ -258,10 +257,9 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 	}
 	var timeAtEnd = Date.now();
 	deltaTime = timeAtEnd - timeAtStart;
+	InitializeBins();
 	return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
 
-	// PrintBins(true);
-	// console.log("Best Solution: " + currBestScore);
 	// return currBestScore;
 }
 
