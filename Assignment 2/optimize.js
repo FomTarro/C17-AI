@@ -53,21 +53,26 @@ function Optimize(){
 		case "hill":
 			var mostRecentScore = TotalScore();
 			HillClimbing(mostRecentScore, _allowedTime * 1000, binSet, _input);
+			_bin1 = binSet[0];
+			_bin2 = binSet[1];
+			_bin3 = binSet[2];
+			PrintBins(true);
+			console.log("Total Score: " + TotalScore());
 			break;
 		case "annealing":
 			theBestScore = TotalScore();
-			SimulatedAnnealing(theBestScore, [_bin1, _bin2, _bin3], theTemp, -9999, _allowedTime * 1000);
+			SimulatedAnnealing(theBestScore, binSet, theTemp, -9999, _allowedTime * 1000);
 			break;
 		case "ga":
 			binSet = GeneticAlgorithm(20, _allowedTime, binSet, _input);
+			_bin1 = binSet[0];
+			_bin2 = binSet[1];
+			_bin3 = binSet[2];
+			PrintBins(true);
+			console.log("Total Score: " + TotalScore());
 			break;
 	}
 	var progend = Date.now();
-	_bin1 = binSet[0];
-	_bin2 = binSet[1];
-	_bin3 = binSet[2];
-	PrintBins(true);
-	console.log("Total Score: " + TotalScore());
 	console.log("Program runtime: " + ((progend - progstart)/1000));
 
 }
@@ -265,8 +270,10 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 
 function SimulatedAnnealing(currBestScore, bins, temperature, prevScore, allowedTime)
 {
-	if(allowedTime <= 0)
+	if(allowedTime <= 0){
+		console.log("Total Score: " + theBestScore);
 		return -1;
+	}
 		
 	var timeAtStart = Date.now();
 	
@@ -321,7 +328,7 @@ function SimulatedAnnealing(currBestScore, bins, temperature, prevScore, allowed
 	new_score = TotalScore();
 
 	if (temperature == 0) {
-		console.log("Best Solution: " + currBestScore);
+		//console.log("Best Solution: " + currBestScore);
 		return 0;
 	}
 	
@@ -357,17 +364,11 @@ function SimulatedAnnealing(currBestScore, bins, temperature, prevScore, allowed
 		return -1;
 
 	if(restart == 1){
-		console.log("restart" + temperature);
-		console.log("Current Best: " + currBestScore);
 		InitializeBins();
 		var timeAtEnd = Date.now();
         var deltaTime = timeAtEnd - timeAtStart;
-		return SimulatedAnnealing(theBestScore, [_bin1, _bin2, _bin3], temperature, currBestScore, allowedTime - deltaTime);
+		return SimulatedAnnealing(theBestScore, bins, temperature, currBestScore, allowedTime - deltaTime);
 	}
 	
 	return 1;
-
-	/*PrintBins(true);
-	console.log("Best Solution!!!: " + currBestScore);
-	return currBestScore;*/
 }

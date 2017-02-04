@@ -171,7 +171,7 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
 
     StateDictionary[key(bins)] = 1;
 
-    console.log("Starting Score: " + best);
+    //console.log("Starting Score: " + best);
     /**
      * Populate Gen 0 with states using given # of starting population
      */
@@ -367,8 +367,8 @@ function RunGeneticAlgorithm(startingPop, allowedTime, bins, input) {
             _bin1 = bins[0];
             _bin2 = bins[1];
             _bin3 = bins[2];
-            console.log("New Best: " + best + " at gen " + generation);
-            PrintBins(true);        
+            //console.log("New Best: " + best + " at gen " + generation);
+            //PrintBins(true);        
             if(StateDictionary[key(bins)] == undefined)
                 StateDictionary[key(bins)] = 1;
             else
