@@ -214,7 +214,8 @@ var totalRuntime = 0;
 var deltaTime = 0;
 function HillClimbing(currBestScore, allowedTime, bins, input)
 {
-	var timeAtStart = Date.now();
+	//var timeAtStart = Date.now();
+	var timeAtEnd;
 	if((allowedTime <= 0)) {
 		return curr_best_score;
 	}
@@ -229,6 +230,7 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 		for(var j = 0; j < 3; j++){
 			for(var k = 0; k < _input.length / 3; k++){
 				for(var l = 0; l < 3; l++){
+					var timeAtStart = Date.now();
 					if(i !== k || j !== l){
 						targetValue = bins[j][i];
 						bins[j][i] = bins[l][k];
@@ -239,21 +241,39 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 						var new_score = 0;
 
 						new_score = ScoreBins(bins);
-
 						counter++;
 						//console.log("Last Total Score: " + parseInt(new_score));
 						// allow 100 iterations for correct solution
 						// if the current score is better than the last one, continue
 						if (new_score > currBestScore && counter <= 100) {
 							curr_best_score = new_score;			
-							var timeAtEnd = Date.now();
+							timeAtEnd = Date.now();
 							deltaTime = timeAtEnd - timeAtStart;
 							totalRuntime = totalRuntime + deltaTime;
+							return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
+						}
+						else if (allowedTime <= 0)
+						{
+							return curr_best_score;
+						}
+						else if (counter > 100)
+						{
+							InitializeBins();
+							counter = 0;
+							timeAtEnd = Date.now();
+							deltaTime = timeAtEnd - timeAtStart;
 							return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
 						}
 
 						bins[l][k] = bins[j][i];
 						bins[j][i] = targetValue;
+						timeAtEnd = Date.now();
+						deltaTime = timeAtEnd - timeAtStart;
+						allowedTime = allowedTime - deltaTime;
+						if (allowedTime <= 0)
+						{
+							return curr_best_score;
+						}
 
 					}
 				}
@@ -261,8 +281,8 @@ function HillClimbing(currBestScore, allowedTime, bins, input)
 		}
 	}
 	var timeAtEnd = Date.now();
-	deltaTime = timeAtEnd - timeAtStart;
 	InitializeBins();
+	deltaTime = timeAtEnd - timeAtStart;
 	return HillClimbing(parseInt(curr_best_score), (allowedTime - deltaTime), bins, _input);
 
 	// return currBestScore;

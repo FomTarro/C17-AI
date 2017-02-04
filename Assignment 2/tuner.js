@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-var size = 9999;
+var size = 45;
 var min = -9;
 var max = 9;
 var list_values = [];
