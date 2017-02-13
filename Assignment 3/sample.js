@@ -13,7 +13,7 @@ if (process.argv.length < 4) {
     process.exit(1);
 }
 
-var _queryNode =  nodeParser(process.argv[2]);
+var _queryNode =  nodeParser(process.argv[2].toLowerCase());
 var _iterations =  process.argv[3];
 var _observedNodes = [];
 
