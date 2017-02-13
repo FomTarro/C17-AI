@@ -1,0 +1,5 @@
+Part 1:
+
+P (pass | good quiz grades) = 0.9
+
+P (pass ^ good quiz grades) = 0.81
