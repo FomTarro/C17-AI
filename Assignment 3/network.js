@@ -17,6 +17,7 @@ function Node(name, cpt, children, parents, value) {
     this.parents = parents;
     this.CPT = cpt;
     this.value = value;
+    this.field = "";
     return this;
 }
 
@@ -34,7 +35,7 @@ function traverse()
 function RejectionSampling(queryNode, observedNodes) {
 	// generate a random variable to compare to
 	var rand = Math.random();
-
+    var isValid = false;
 	// if the query node is a top node, don't need to check parents
 	if (queryNode.parents == undefined)
 	{
@@ -42,9 +43,16 @@ function RejectionSampling(queryNode, observedNodes) {
 		for (var key in CPT.Humidity)
 		if (queryNode.name == "Humidity")
 		{
-			
-		}
+            if(rand <= queryNode.CPT.LOW && queryNode.field == "low") 
+                isValid = true;
+            else if (rand > queryNode.CPT.LOW && rand <= (1 - queryNode.CPT.HIGH) && queryNode.field == "medium")
+                isValid = true;
+            else if (rand > (1 - queryNode.CPT.MEDIUM) && rand <= 1 && queryNode.field == "high")
+                isValid = true;
 
+		} else if (queryNode.name == "Temp") {
+
+        }
 	}
 
 	// otherwise, check the probabilities of each of its parent nodes to obtain the probability of the dependent query node
@@ -56,6 +64,16 @@ function RejectionSampling(queryNode, observedNodes) {
 
 		}
 	}
+
+    
+    if(isValid && observedNodes != undefined) {
+        if(traverse())
+            valid_samples++;
+        else
+            console.log("TODO: start over")
+    } else if(!isValid){
+        
+    }
 }
 
 /**
@@ -84,6 +102,8 @@ function Network() {
 
         this.topNodes = [humidNode, tempNode, dayNode];
     }
+
+    this.RejectionSampling = RejectionSampling;
 
     //Prints in level order
     this.PrintNetwork = function() {
