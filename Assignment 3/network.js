@@ -30,14 +30,14 @@ function Network() {
 
     this.Init = function() {
         //init bottom-up
-        var stressNode = new Node("Stress", CPT.Stress);
-        var examsNode = new Node("Exams", CPT.Exams, [stressNode]);
-        var cloudyNode = new Node("Cloudy", CPT.Cloudy);
-        var dayNode = new Node("Day", CPT.Day, [examsNode]);
-        var snowNode = new Node("Snow", CPT.Snow, [cloudyNode, stressNode, examsNode]);
-        var icyNode = new Node("Icy", CPT.Icy);
-        var humidNode = new Node("Humidity", CPT.Humidity, [icyNode, snowNode]);
-        var tempNode = new Node("Temp", CPT.Temperature, [icyNode, snowNode]);
+        var stressNode = new Node("stress", CPT.Stress);
+        var examsNode = new Node("exams", CPT.Exams, [stressNode]);
+        var cloudyNode = new Node("cloudy", CPT.Cloudy);
+        var dayNode = new Node("day", CPT.Day, [examsNode]);
+        var snowNode = new Node("snow", CPT.Snow, [cloudyNode, stressNode, examsNode]);
+        var icyNode = new Node("icy", CPT.Icy);
+        var humidNode = new Node("humidity", CPT.Humidity, [icyNode, snowNode]);
+        var tempNode = new Node("temp", CPT.Temperature, [icyNode, snowNode]);
 
         this.topNodes = [humidNode, tempNode, dayNode];
     }
