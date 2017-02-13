@@ -1,14 +1,57 @@
 ///make the network here
 // feel free to rename shit if variables seem too vague
 
-function Node() {
-    this.children;
-    this.parents;
+function Node(name, cpt, children) {
+    this.name = name;
+    this.children = children;
+    this.CPT = cpt;
+    return this;
 }
 
 function Network() {
-    this.roots;
+    this.topNodes;
+
+    this.Init = function() {
+        //init bottom-up
+        var stressNode = new Node("Stress", CPT.Stress);
+        var examsNode = new Node("Exams", CPT.Exams, [stressNode]);
+        var cloudyNode = new Node("Cloudy", CPT.Cloudy);
+        var dayNode = new Node("Day", CPT.Day, [examsNode]);
+        var snowNode = new Node("Snow", CPT.Snow, [cloudyNode, stressNode, examsNode]);
+        var icyNode = new Node("Icy", CPT.Icy);
+        var humidNode = new Node("Humidity", CPT.Humidity, [icyNode, snowNode]);
+        var tempNode = new Node("Temp", CPT.Temperature, [icyNode, snowNode]);
+
+        this.topNodes = [humidNode, tempNode, dayNode];
+    }
+
+    //Prints in level order
+    this.PrintNetwork = function() {
+        var nodelevel = 0;
+        if(this.topNodes == undefined || this.topNodes.length == 0) {
+            console.log("Network not initialized");
+            return;
+        }
+
+        var PrintNodesRecursively = function(node, level) {
+            console.log('  '.repeat(level) + node.name);
+            if(node.children == undefined) return;
+            node.children.forEach(function(child) {
+                PrintNodesRecursively(child, level + 1);
+            })
+        }
+
+        this.topNodes.forEach(function(node) {
+            PrintNodesRecursively(node, nodelevel);
+        })
+    }
+
+    return this;
 }
+
+var network = new Network();
+network.Init();
+network.PrintNetwork();
 
 var Humidity = {
     LOW: 0.2,
@@ -27,13 +70,19 @@ var Day = {
     WEEKDAY: 0.8
 }
 
-function CPT() {
+var CPT = {
 
-    this.Cloudy = function(isCloudy) {
+    Humidity: Humidity,
+
+    Temperature: Temperature,
+
+    Day: Day,
+
+    Cloudy: function(isCloudy) {
         return isCloudy ? 0.9 : 0.3;
-    }
+    },
 
-    this.Icy = function(isIcy, h, t) {
+    Icy: function(isIcy, h, t) {
         if (isIcy) {
             if (h == Humidity.LOW && t == Temperature.WARM) return 0.001;
             if (h == Humidity.LOW && t == Temperature.MILD) return 0.01;
@@ -55,10 +104,9 @@ function CPT() {
             if (h == Humidity.HIGH && t == Temperature.MILD) return 1 - 0.01;
             if (h == Humidity.HIGH && t == Temperature.COLD) return 1 - 0.35;
         }
-        return Error("INVALID PARAMETERS Humidity: " + h + " Temperature: " + t);
-    }
+    },
 
-    this.Snow = function(isSnow, h, t) {
+    Snow: function(isSnow, h, t) {
         if (isSnow) {
             if (h == Humidity.LOW && t == Temperature.WARM) return 0.00001;
             if (h == Humidity.LOW && t == Temperature.MILD) return 0.001;
@@ -80,27 +128,33 @@ function CPT() {
             if (h == Humidity.HIGH && t == Temperature.MILD) return 1 - 0.001;
             if (h == Humidity.HIGH && t == Temperature.COLD) return 1 - 0.4;
         }
-    }
+    },
 
-    this.Exams = function(isTrue, isSnow, day) {
+    Exams: function(isTrue, isSnow, day) {
         if (isTrue) {
             if (!isSnow && day == Day.WEEKEND) return 0.001;
             if (!isSnow && day == Day.WEEKDAY) return 0.01;
             if (isSnow && day == Day.WEEKEND) return 0.0001;
             if (isSnow && day == Day.WEEKDAY) return 0.3;
         } else {
-            //TODO return probability if exams = false;
+            if (!isSnow && day == Day.WEEKEND) return 1 - 0.001;
+            if (!isSnow && day == Day.WEEKDAY) return 1 - 0.01;
+            if (isSnow && day == Day.WEEKEND) return 1 - 0.0001;
+            if (isSnow && day == Day.WEEKDAY) return 1 - 0.3;
         }
-    }
+    },
 
-    this.Stress = function(isHigh, isSnow, isExams) {
+    Stress: function(isHigh, isSnow, isExams) {
         if (isHigh) {
             if(!isSnow && !isExams) return 0.01;
             if(!isSnow && isExams) return 0.2;
             if(isSnow && !isExams) return 0.1;
             if(isSnow && isExams) return 0.5;
         } else {
-            //TODO return probability if stress = low
+            if(!isSnow && !isExams) return 1 - 0.01;
+            if(!isSnow && isExams) return 1 - 0.2;
+            if(isSnow && !isExams) return 1 - 0.1;
+            if(isSnow && isExams) return 1 - 0.5;
         }
     }
 }
