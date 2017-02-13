@@ -20,3 +20,5 @@ for(var i = 4; i <  process.argv.length; i++){
     var obs =  process.argv[i]
     _observedNodes[i-4] = obs;
 }
+
+var Network = require("./network");
