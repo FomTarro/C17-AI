@@ -1,18 +1,61 @@
 ///make the network here
 // feel free to rename shit if variables seem too vague
 
+var valid_samples = 0;
+
 /**
  * Node Class
  *  name        name of node
  *  children    an array of children. if node is a leaf, then this is undefined
+ *  parents		an array of parents. if node is a top node, then this is undefined
  *  CPT         CPT function. Has different params depending on node.
  *              example for Snow node: - node.CPT(true, CPT.Humidity.LOW, CPT.Temperature.MILD) 
  */
-function Node(name, cpt, children) {
+function Node(name, cpt, children, parents, value) {
     this.name = name;
     this.children = children;
+    this.parents = parents;
     this.CPT = cpt;
+    this.value = value;
     return this;
+}
+
+/**
+*/
+function traverse()
+{
+
+}
+
+/** Rejection Sampling
+*  increments the number of valid samples if the observed nodes are valid
+*  and it is valid
+*/
+function RejectionSampling(queryNode, observedNodes) {
+	// generate a random variable to compare to
+	var rand = Math.random();
+
+	// if the query node is a top node, don't need to check parents
+	if (queryNode.parents == undefined)
+	{
+		// if rand meets the probability criteria, increment validSamples
+		for (var key in CPT.Humidity)
+		if (queryNode.name == "Humidity")
+		{
+			
+		}
+
+	}
+
+	// otherwise, check the probabilities of each of its parent nodes to obtain the probability of the dependent query node
+	else
+	{
+		// for each parent node, check that it is not a top node; continue until top node is found
+		while (queryNode.parents != undefined)
+		{
+
+		}
+	}
 }
 
 /**
