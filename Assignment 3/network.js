@@ -46,17 +46,18 @@ function RejectionSampling(queryNode, observedNodes, network) {
 		}
 	}
 	
-	rand = Math.random();
-	
-	for(var i = 0; i < 3; i++){
-		//console.log(observedNodes[0].node)
-		if(network.topNodes[i].name.toLowerCase() == observedNodes[0].node){
-			if(rand >= network.topNodes[i].CPT.QueryValue(observedNodes[0].value)){
-				//console.log("reject observed");
-				return 0;
-			}
-		}
-	}
+	if(observedNodes.length > 0) {
+        rand = Math.random();
+        for(var i = 0; i < 3; i++){
+            //console.log(observedNodes[0].node)
+            if(network.topNodes[i].name.toLowerCase() == observedNodes[0].node){
+                if(rand >= network.topNodes[i].CPT.QueryValue(observedNodes[0].value)){
+                    //console.log("reject observed");
+                    return 0;
+                }
+            }
+        }
+    }
 	
 	//console.log("accept");	
 	return 1;
@@ -84,7 +85,7 @@ function Network() {
         var snowNode = new Node("Snow", CPT.Snow, [cloudyNode, stressNode, examsNode]);
         var icyNode = new Node("Icy", CPT.Icy);
         var humidNode = new Node("Humidity", CPT.Humidity, [icyNode, snowNode]);
-        var tempNode = new Node("Temp", CPT.Temperature, [icyNode, snowNode]);
+        var tempNode = new Node("Tempurature", CPT.Temperature, [icyNode, snowNode]);
 
         this.topNodes = [humidNode, tempNode, dayNode];
     }
@@ -156,7 +157,13 @@ var CPT = {
     // Day (WEEKDAY, WEEKEND)
     Day: {
         WEEKEND: 0.2,
-        WEEKDAY: 0.8
+        WEEKDAY: 0.8,
+        QueryValue: function(value){
+            if(value == "weekend")
+                return 0.2
+            if(value == "weekday")
+                return 0.8
+        }
     },
 
     // Cloudy (true, false)
