@@ -48,3 +48,13 @@ function nodeParser(node){
 
 var test = nodeParser("aaa=bbb");
 console.log(test.value);
+var netWork = new Network();
+netWork.Init();
+
+var accepted = 0;
+
+for(var i = 0; i < _iterations; i++){
+	accepted += netWork.RejectionSampling(_queryNode,_observedNodes, netWork);
+}
+
+console.log("Probability = " + (accepted / _iterations));

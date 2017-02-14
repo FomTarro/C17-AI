@@ -17,7 +17,6 @@ function Node(name, cpt, children, parents, value) {
     this.parents = parents;
     this.CPT = cpt;
     this.value = value;
-    this.field = "";
     return this;
 }
 
@@ -32,48 +31,35 @@ function traverse()
 *  increments the number of valid samples if the observed nodes are valid
 *  and it is valid
 */
-function RejectionSampling(queryNode, observedNodes) {
+function RejectionSampling(queryNode, observedNodes, network) {
 	// generate a random variable to compare to
 	var rand = Math.random();
-    var isValid = false;
-	// if the query node is a top node, don't need to check parents
-	if (queryNode.parents == undefined)
-	{
-		// if rand meets the probability criteria, increment validSamples
-		for (var key in CPT.Humidity)
-		if (queryNode.name == "Humidity")
-		{
-            if(rand <= queryNode.CPT.LOW && queryNode.field == "low") 
-                isValid = true;
-            else if (rand > queryNode.CPT.LOW && rand <= (1 - queryNode.CPT.HIGH) && queryNode.field == "medium")
-                isValid = true;
-            else if (rand > (1 - queryNode.CPT.MEDIUM) && rand <= 1 && queryNode.field == "high")
-                isValid = true;
-
-		} else if (queryNode.name == "Temp") {
-
-        }
-	}
-
-	// otherwise, check the probabilities of each of its parent nodes to obtain the probability of the dependent query node
-	else
-	{
-		// for each parent node, check that it is not a top node; continue until top node is found
-		while (queryNode.parents != undefined)
-		{
-
+	var reject = false;
+	
+	for(var i = 0; i < 3; i++){
+		//console.log(network.topNodes[i].name.toLowerCase() + == queryNode.node)
+		if(network.topNodes[i].name.toLowerCase() == queryNode.node){
+			if(rand >= network.topNodes[i].CPT.QueryValue(queryNode.value)){
+				//console.log("reject query");
+				return 0;
+			}
 		}
 	}
-
-    
-    if(isValid && observedNodes != undefined) {
-        if(traverse())
-            valid_samples++;
-        else
-            console.log("TODO: start over")
-    } else if(!isValid){
-        
-    }
+	
+	rand = Math.random();
+	
+	for(var i = 0; i < 3; i++){
+		//console.log(observedNodes[0].node)
+		if(network.topNodes[i].name.toLowerCase() == observedNodes[0].node){
+			if(rand >= network.topNodes[i].CPT.QueryValue(observedNodes[0].value)){
+				//console.log("reject observed");
+				return 0;
+			}
+		}
+	}
+	
+	//console.log("accept");	
+	return 1;
 }
 
 /**
@@ -102,9 +88,9 @@ function Network() {
 
         this.topNodes = [humidNode, tempNode, dayNode];
     }
-
-    this.RejectionSampling = RejectionSampling;
-
+	
+	this.RejectionSampling = RejectionSampling;
+	
     //Prints in level order
     this.PrintNetwork = function() {
         var nodelevel = 0;
@@ -141,14 +127,30 @@ var CPT = {
     Humidity: {
         LOW: 0.2,
         MEDIUM: 0.5,
-        HIGH: 0.3
+        HIGH: 0.3,
+        QueryValue: function(value){
+        	if(value == "low")
+        		return 0.2
+        	if(value == "medium")
+        		return 0.5
+        	if(value == "high")
+        		return 0.3
+        }
     },
 
     // Temperature (WARM, MILD, COLD)
     Temperature: {
         WARM: 0.1,
         MILD: 0.4,
-        COLD: 0.5
+        COLD: 0.5,
+        QueryValue: function(value){
+        	if(value == "warm")
+        		return 0.1
+        	if(value == "mild")
+        		return 0.4
+        	if(value == "cold")
+        		return 0.5
+        }
     },
 
     // Day (WEEKDAY, WEEKEND)
