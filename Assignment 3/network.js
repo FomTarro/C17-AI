@@ -212,6 +212,12 @@ var CPT = {
         LOW: 0.2,
         MEDIUM: 0.5,
         HIGH: 0.3,
+		SimulateValue: function(value) {
+			//returns a name
+			if (value >= 0 && value < 0.2) return "low";
+			if (value >= 0.2 && value < 0.7) return "medium";
+			if (value >= 0.7 && value <= 1) return "high";
+		},
         QueryValue: function(value){
         	if(value == "low")
         		return 0.2
@@ -227,6 +233,12 @@ var CPT = {
         WARM: 0.1,
         MILD: 0.4,
         COLD: 0.5,
+		SimulateValue: function(value) {
+			//returns a name
+			if (value >= 0 && value < 0.1) return "warm";
+			if (value >= 0.1 && value < 0.5) return "mild";
+			if (value >= 0.5 && value <= 1) return "cold";
+		},
         QueryValue: function(value){
         	if(value == "warm")
         		return 0.1
@@ -241,6 +253,11 @@ var CPT = {
     Day: {
         WEEKEND: 0.2,
         WEEKDAY: 0.8,
+		SimulateValue: function(value) {
+			//returns a name
+			if (value >= 0 && value < 0.2) return "weekend";
+			if (value >= 0.2 && value <= 1) return "weekday";
+		},
         QueryValue: function(value){
             if(value == "weekend")
                 return 0.2
@@ -250,13 +267,73 @@ var CPT = {
     },
 
     // Cloudy (true, false)
-    Cloudy: function(isCloudy) {
-        return isCloudy ? 0.9 : 0.3;
-    },
+    Cloudy: {
+		SimulateValue: function(value, isSnow) {
+			if (isSnow == "true") {
+				if (value >= 0 && value < 0.9) return "true";
+				if (value >= 0.9 && value <= 1) return "false";
+			}
+			else if (isSnow == "false") {
+				if (value >= 0 && value < 0.3) return "true";
+				if (value >= 0.3 && value <= 1) return "false";
+			} else {
+				new Error("CPT.Cloudy: Unable to SimulateValue");
+			}
+		},
+		QueryValue: function(isCloudy, isSnow) {
+			if(isCloudy == "true") {
+				if(isSnow == -1) return 0.3 + 0.9;
+				if(isSnow == "true" || isSnow) return 0.9;
+				if(isSnow == "false" || !isSnow) return 0.3;
+			} else {
+				if(isSnow == -1) return 0.7 + 0.1;
+				if(isSnow == "true" || isSnow) return 0.1;
+				if(isSnow == "false" || !isSnow) return 0.7;
+			}
+    	}
+	},
 
     // Icy (true, false)
     //      depends on [Humidity, Temperature]
     Icy: {
+		SimulateValue: function(value, h, t) {
+			if(h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) {
+				if (value >= 0 && value < 0.001) return "true";
+				if (value >= 0.001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) {
+				if (value >= 0 && value < 0.01) return "true";
+				if (value >= 0.01 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) {
+				if (value >= 0 && value < 0.05) return "true";
+				if (value >= 0.05 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) {
+				if (value >= 0 && value < 0.001) return "true";
+				if (value >= 0.001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) {
+				if (value >= 0 && value < 0.03) return "true";
+				if (value >= 0.03 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) {
+				if (value >= 0 && value < 0.2) return "true";
+				if (value >= 0.2 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) {
+				if (value >= 0 && value < 0.005) return "true";
+				if (value >= 0.005 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) {
+				if (value >= 0 && value < 0.01) return "true";
+				if (value >= 0.01 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) {
+				if (value >= 0 && value < 0.35) return "true";
+				if (value >= 0.35 && value <= 1) return "false";
+			}
+		},
     	QueryValue: function(isIcy, h, t) {
 	        if (isIcy == "true") {
 	        	if(h + t == -2) return 0.657;
@@ -280,9 +357,17 @@ var CPT = {
 	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 0.01;
 	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 0.35;
 	        } else {
-	        	if(h + t == -2){
-	        		return 0.927;
-	        	}
+	        	if(h + t == -2) return 8.343;
+	        	if (h == -1) {
+					if (t == CPT.Temperature.WARM) return 2.993;
+					if (t == CPT.Temperature.MILD) return 2.95;
+					if (t == CPT.Temperature.COLD) return 2.4;
+				}
+				if (t == -1) {
+					if (h == CPT.Humidity.LOW) return 2.939;
+		            if (h == CPT.Humidity.MEDIUM) return 2.769;
+		            if (h == CPT.Humidity.HIGH) return 2.635;
+				}
 	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 1 - 0.001;
 	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 1 - 0.01;
 	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 1 - 0.05;
@@ -298,61 +383,198 @@ var CPT = {
 
     // Snow (true, false)
     //      depends on [Humidity, Temperature]
-    Snow: function(isSnow, h, t) {
-        if (isSnow) {
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 0.00001;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 0.001;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 0.01;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 0.00001;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 0.0001;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 0.25;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 0.0001;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 0.001;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 0.4;
-        } else {
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 1 - 0.00001;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 1 - 0.001;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 1 - 0.01;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 1 - 0.00001;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 1 - 0.0001;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 1 - 0.25;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 1 - 0.0001;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 1 - 0.001;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 1 - 0.4;
-        }
-    },
+    Snow: {
+		SimulateValue: function(value, h, t) {
+			if(h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) {
+				if (value >= 0 && value < 0.00001) return "true";
+				if (value >= 0.00001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) {
+				if (value >= 0 && value < 0.001) return "true";
+				if (value >= 0.001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) {
+				if (value >= 0 && value < 0.1) return "true";
+				if (value >= 0.1 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) {
+				if (value >= 0 && value < 0.00001) return "true";
+				if (value >= 0.00001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) {
+				if (value >= 0 && value < 0.0001) return "true";
+				if (value >= 0.0001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) {
+				if (value >= 0 && value < 0.25) return "true";
+				if (value >= 0.25 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) {
+				if (value >= 0 && value < 0.0001) return "true";
+				if (value >= 0.0001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) {
+				if (value >= 0 && value < 0.001) return "true";
+				if (value >= 0.001 && value <= 1) return "false";
+			}
+			if(h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) {
+				if (value >= 0 && value < 0.4) return "true";
+				if (value >= 0.4 && value <= 1) return "false";
+			}
+		},
+		QueryValue: function(isSnow, h, t) {
+        	if (isSnow == "true") {
+				if(h + t == -2) return 0.75222;
+	        	if(h == -1){
+	        		if (t == CPT.Temperature.WARM) return 0.00012;
+		            if (t == CPT.Temperature.MILD) return 0.0021;
+		            if (t == CPT.Temperature.COLD) return 0.75;
+	        	}
+	        	if(t == -1){
+	        		if (h == CPT.Humidity.LOW) return 0.10101;
+		            if (h == CPT.Humidity.MEDIUM) return 0.25011;
+		            if (h == CPT.Humidity.HIGH) return 0.4011;
+	        	}
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 0.00001;
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 0.001;
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 0.01;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 0.00001;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 0.0001;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 0.25;
+				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 0.0001;
+				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 0.001;
+				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 0.4;
+			} else {
+				if(h + t == -2) return 8.24778;
+	        	if(h == -1){
+	        		if (t == CPT.Temperature.WARM) return 2.99988;
+		            if (t == CPT.Temperature.MILD) return 2.9979;
+		            if (t == CPT.Temperature.COLD) return 2.25;
+	        	}
+	        	if(t == -1){
+	        		if (h == CPT.Humidity.LOW) return 2.89899;
+		            if (h == CPT.Humidity.MEDIUM) return 2.74989;
+		            if (h == CPT.Humidity.HIGH) return 2.5989;
+	        	}
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 1 - 0.00001;
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 1 - 0.001;
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 1 - 0.01;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 1 - 0.00001;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 1 - 0.0001;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 1 - 0.25;
+				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 1 - 0.0001;
+				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 1 - 0.001;
+				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 1 - 0.4;
+			}
+		}
+	},
+	// Exams (true, false)
+	//      depends on [Snow, Day]
+	Exams: {
+		SimulateValue: function(value, isSnow, day) {
+			if(isSnow == "false" || !isSnow && day == CPT.Day.WEEKEND) {
+				if(value >= 0 && value < 0.001) return "true";
+				if(value >= 0.001 && value <= 1) return "false";
+			}
+			if(isSnow == "false" || !isSnow && day == CPT.Day.WEEKDAY) {
+				if(value >= 0 && value < 0.1) return "true";
+				if(value >= 0.1 && value <= 1) return "false";
+			}
+			if(isSnow == "true" || isSnow && day == CPT.Day.WEEKEND) {
+				if(value >= 0 && value < 0.0001) return "true";
+				if(value >= 0.0001 && value <= 1) return "false";
+			}
+			if(isSnow == "true" || isSnow && day == CPT.Day.WEEKDAY) {
+				if(value >= 0 && value < 0.3) return "true";
+				if(value >= 0.3 && value <= 1) return "false";
+			}
+		},
+		QueryValue: function(isTrue, isSnow, day) {
+			if (isTrue == "true") {
+				if(isSnow + day == -2) return 0.4011;
+				if(isSnow == -1) {
+					if(day == CPT.Day.WEEKEND) return 0.0011;
+					if(day == CPT.Day.WEEKDAY) return 0.4;
+				}
+				if(day == -1) {
+					if(isSnow == "true") return 0.3001;
+					if(isSnow == "false") return 0.101;
+				}
+				if (!isSnow && day == CPT.Day.WEEKEND) return 0.001;
+				if (!isSnow && day == CPT.Day.WEEKDAY) return 0.01;
+				if (isSnow && day == CPT.Day.WEEKEND) return 0.0001;
+				if (isSnow && day == CPT.Day.WEEKDAY) return 0.3;
+			} else {
+				if(isSnow + day == -2) return 3.5989;
+				if(isSnow == -1) {
+					if(day == CPT.Day.WEEKEND) return 1.9989;
+					if(day == CPT.Day.WEEKDAY) return 1.6;
+				}
+				if(day == -1) {
+					if(isSnow == "true") return 1.6999;
+					if(isSnow == "false") return 1.899;
+				}
+				if (!isSnow && day == CPT.Day.WEEKEND) return 1 - 0.001;
+				if (!isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.01;
+				if (isSnow && day == CPT.Day.WEEKEND) return 1 - 0.0001;
+				if (isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.3;
+			}
+		}
+	},
 
-    // Exams (true, false)
-    //      depends on [Snow, Day]
-    Exams: function(isTrue, isSnow, day) {
-        if (isTrue) {
-            if (!isSnow && day == CPT.Day.WEEKEND) return 0.001;
-            if (!isSnow && day == CPT.Day.WEEKDAY) return 0.01;
-            if (isSnow && day == CPT.Day.WEEKEND) return 0.0001;
-            if (isSnow && day == CPT.Day.WEEKDAY) return 0.3;
-        } else {
-            if (!isSnow && day == CPT.Day.WEEKEND) return 1 - 0.001;
-            if (!isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.01;
-            if (isSnow && day == CPT.Day.WEEKEND) return 1 - 0.0001;
-            if (isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.3;
-        }
-    },
-
-    // Stress (high/true, low/false)
-    //      depends on [Snow, Exams]
-    Stress: function(isHigh, isSnow, isExams) {
-        if (isHigh) {
-            if(!isSnow && !isExams) return 0.01;
-            if(!isSnow && isExams) return 0.2;
-            if(isSnow && !isExams) return 0.1;
-            if(isSnow && isExams) return 0.5;
-        } else {
-            if(!isSnow && !isExams) return 1 - 0.01;
-            if(!isSnow && isExams) return 1 - 0.2;
-            if(isSnow && !isExams) return 1 - 0.1;
-            if(isSnow && isExams) return 1 - 0.5;
-        }
-    }
+	// Stress (high/true, low/false)
+	//      depends on [Snow, Exams]
+	Stress: {
+		SimulateValue: function(value, isSnow, exams) {
+			if(isSnow == "false" || !isSnow && exams == "false") {
+				if(value >= 0 && value < 0.01) return "high";
+				if(value >= 0.01 && value <= 1) return "low";
+			}
+			if(isSnow == "false" || !isSnow && exams == "true") {
+				if(value >= 0 && value < 0.2) return "high";
+				if(value >= 0.2 && value <= 1) return "low";
+			}
+			if(isSnow == "true" || isSnow && exams == "false") {
+				if(value >= 0 && value < 0.1) return "high";
+				if(value >= 0.1 && value <= 1) return "low";
+			}
+			if(isSnow == "true" || isSnow && exams == "true") {
+				if(value >= 0 && value < 0.5) return "high";
+				if(value >= 0.5 && value <= 1) return "low";
+			}
+		},
+		QueryValue: function(isHigh, isSnow, isExams) {
+			if (isHigh) {
+				if(isSnow + isExams == -1) return 0.81;
+				if(isSnow == -1) {
+					if(isExams == "true") return 0.7;
+					if(isExams == "false") return 0.11;
+				}
+				if(isExams == -1) {
+					if(isSnow == "true") return 0.6;
+					if(isSnow == "false") return 0.21;
+				}
+				if(!isSnow && !isExams) return 0.01;
+				if(!isSnow && isExams) return 0.2;
+				if(isSnow && !isExams) return 0.1;
+				if(isSnow && isExams) return 0.5;
+			} else {
+				if(isSnow + isExams == -1) return 3.19;
+				if(isSnow == -1) {
+					if(isExams == "true") return 1.3;
+					if(isExams == "false") return 1.89;
+				}
+				if(isExams == -1) {
+					if(isSnow == "true") return 1.4;
+					if(isSnow == "false") return 1.79;
+				}
+				if(!isSnow && !isExams) return 1 - 0.01;
+				if(!isSnow && isExams) return 1 - 0.2;
+				if(isSnow && !isExams) return 1 - 0.1;
+				if(isSnow && isExams) return 1 - 0.5;
+			}
+		}
+	}
 }
 
 module.exports = Network; 
