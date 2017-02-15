@@ -115,11 +115,13 @@ PokeClient = (function(superClass) {
       room = '';
     }
     payload = room + "|" + message;
+    //console.log(payload)
     this.socket.send(payload);
     return this.emit('internal:send', payload);
   };
 
   PokeClient.prototype._handle = function(data) {
+    console.log(data);
     var i, len, message, messages, results;
     this.emit('internal:raw', data);
     messages = this._lex(data);
