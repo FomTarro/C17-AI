@@ -31,36 +31,119 @@ function traverse()
 *  increments the number of valid samples if the observed nodes are valid
 *  and it is valid
 */
-function RejectionSampling(queryNode, observedNodes, network) {
+function RejectionSampling(queryNode, observedNodes, network, iterations) {
 	// generate a random variable to compare to
 	var rand = Math.random();
+	
+	var hum = -1;
+	var tem = -1;
+	var da = -1;
+	var ice = -1;
+	var sno = -1;
+	var clo = -1;
+	var exa = -1;
+	var str = -1;
+	
+	var samples = 0;
+	var accepted = 0;
+	
 	var reject = false;
 	
-	for(var i = 0; i < 3; i++){
-		//console.log(network.topNodes[i].name.toLowerCase() + == queryNode.node)
-		if(network.topNodes[i].name.toLowerCase() == queryNode.node){
-			if(rand >= network.topNodes[i].CPT.QueryValue(queryNode.value)){
-				//console.log("reject query");
-				return 0;
+	for(var itr = 0; itr < iterations; itr++){
+		rand = Math.random();
+		reject = false;
+		
+		//collect the samples, this is the probability of all the observed nodes separated by logical ands
+		//first we need to determine the values of observed nodes and store them
+		//this finds the values for the top nodes
+		for(var j = 0; j < observedNodes.length; j++){
+			reject = false;
+			
+			//find the value for top level nodes
+			for(var i = 0; i < 3; i++){
+	            if(network.topNodes[i].name.toLowerCase() == observedNodes[j].node){
+					if (i == 0)
+						hum = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
+					else if (i == 1)
+						tem = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
+					else if (i == 1)
+						da = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
+					
+					//set this just so we dont go into all the other for loops since we found the value
+					reject = true;
+	            }
+	        }
+		}
+		
+		
+
+		/*for(var i = 0; i < 3 && !reject; i++){
+			//console.log(network.topNodes[i].name.toLowerCase() + == queryNode.node)
+			if(network.topNodes[i].name.toLowerCase() == queryNode.node){
+				if(rand >= network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase())){
+					reject = true;
+				}
+				else{
+					if(i == 0)
+						hum = network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase());
+					else if(i == 1)
+						tem = network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase());
+					else if(i == 1)
+						da = network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase());
+					
+					samples++;
+				}
 			}
 		}
+		rand = Math.random();
+		for(var i = 0; i < 2 && !reject; i++){
+			if(network.topNodes[0].children[i].name.toLowerCase() == queryNode.node){
+				if(rand >= network.topNodes[0].children[i].CPT.QueryValue(queryNode.value.toLowerCase(), hum, tem)){
+					//console.log("reject query");
+					reject = true;
+				}
+				else{
+					samples++;
+				}
+			}
+		}
+		
+		for(var j = 0; j < observedNodes.length && !reject; j++){
+	        rand = Math.random();
+	        for(var i = 0; i < 3 && !reject; i++){
+	            if(network.topNodes[i].name.toLowerCase() == observedNodes[j].node){
+	                if(rand >= network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase())){
+	                    reject = true;
+	                }
+	                else{
+						if(i == 0)
+							hum = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
+						else if(i == 1)
+							tem = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
+						else if(i == 1)
+							da = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
+						accepted++;
+					}
+	            }
+	        }
+	        rand = Math.random();
+			for(var i = 0; i < 2 && !reject; i++){
+				if(network.topNodes[0].children[i].name.toLowerCase() == observedNodes[j].node){
+					if(rand >= network.topNodes[0].children[i].CPT.QueryValue(observedNodes[j].value.toLowerCase(), hum, tem)){
+						//console.log("reject query: " + rand +"stuff: " + network.topNodes[0].children[i].CPT.QueryValue(observedNodes[j].value.toLowerCase(), hum, tem));
+						reject = true;
+					}
+					else{
+						accepted++;
+					}
+				}
+			}
+	    }*/
 	}
 	
-	if(observedNodes.length > 0) {
-        rand = Math.random();
-        for(var i = 0; i < 3; i++){
-            //console.log(observedNodes[0].node)
-            if(network.topNodes[i].name.toLowerCase() == observedNodes[0].node){
-                if(rand >= network.topNodes[i].CPT.QueryValue(observedNodes[0].value)){
-                    //console.log("reject observed");
-                    return 0;
-                }
-            }
-        }
-    }
-	
-	//console.log("accept");	
-	return 1;
+	console.log("Samples: " + samples);	
+	console.log("Accepted Samples: " + accepted);
+	console.log("Probability: " + ((accepted/samples)/(samples/iterations)));
 }
 
 /**
@@ -85,7 +168,7 @@ function Network() {
         var snowNode = new Node("Snow", CPT.Snow, [cloudyNode, stressNode, examsNode]);
         var icyNode = new Node("Icy", CPT.Icy);
         var humidNode = new Node("Humidity", CPT.Humidity, [icyNode, snowNode]);
-        var tempNode = new Node("Tempurature", CPT.Temperature, [icyNode, snowNode]);
+        var tempNode = new Node("Temperature", CPT.Temperature, [icyNode, snowNode]);
 
         this.topNodes = [humidNode, tempNode, dayNode];
     }
@@ -173,28 +256,44 @@ var CPT = {
 
     // Icy (true, false)
     //      depends on [Humidity, Temperature]
-    Icy: function(isIcy, h, t) {
-        if (isIcy) {
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 0.001;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 0.01;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 0.05;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 0.001;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 0.03;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 0.02;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 0.005;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 0.01;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 0.35;
-        } else {
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 1 - 0.001;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 1 - 0.01;
-            if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 1 - 0.05;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 1 - 0.001;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 1 - 0.03;
-            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 1 - 0.02;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 1 - 0.005;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 1 - 0.01;
-            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 1 - 0.35;
-        }
+    Icy: {
+    	QueryValue: function(isIcy, h, t) {
+	        if (isIcy == "true") {
+	        	if(h + t == -2) return 0.657;
+	        	if(h == -1){
+	        		if (t == CPT.Temperature.WARM) return 0.007;
+		            if (t == CPT.Temperature.MILD) return 0.05;
+		            if (t == CPT.Temperature.COLD) return 0.6;
+	        	}
+	        	if(t == -1){
+	        		if (h == CPT.Humidity.LOW) return 0.061;
+		            if (h == CPT.Humidity.MEDIUM) return 0.231;
+		            if (h == CPT.Humidity.HIGH) return 0.365;
+	        	}
+	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 0.001;
+	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 0.01;
+	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 0.05;
+	            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 0.001;
+	            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 0.03;
+	            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 0.2;
+	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 0.005;
+	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 0.01;
+	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 0.35;
+	        } else {
+	        	if(h + t == -2){
+	        		return 0.927;
+	        	}
+	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 1 - 0.001;
+	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 1 - 0.01;
+	            if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 1 - 0.05;
+	            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 1 - 0.001;
+	            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 1 - 0.03;
+	            if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 1 - 0.02;
+	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 1 - 0.005;
+	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.MILD) return 1 - 0.01;
+	            if (h == CPT.Humidity.HIGH && t == CPT.Temperature.COLD) return 1 - 0.35;
+	        }
+    	}
     },
 
     // Snow (true, false)
