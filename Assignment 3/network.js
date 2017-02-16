@@ -226,10 +226,30 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 	console.log("Samples: " + samples);	
 	console.log("Accepted Samples: " + accepted);
 	
-	if(observedNodes.length > 0)
-		console.log("Probability: " + ((accepted/samples)));
-	else
-		console.log("Probability: " + ((accepted/iterations)));
+	if(observedNodes.length == 0)
+		samples = iterations;
+		
+	console.log("Probability: " + ((accepted/samples)));
+		
+	console.log("Standard Deviation: " + stdDev(accepted/samples));
+	console.log("ConfidenceInterval[Lower Range: " + confidenceInterval(accepted/samples, stdDev(accepted/samples), samples)[0] + ", Upper Range: " + confidenceInterval(accepted/samples, stdDev(accepted/samples), samples)[1] + "]");
+}
+
+function stdDev(prob_query)
+{
+	var stdDev = Math.sqrt(prob_query * (1 - prob_query));
+	return stdDev;
+}
+
+function confidenceInterval(prob_query, stdDev, numSamples)
+{
+	var lowerRange = prob_query - 2 * (stdDev / Math.sqrt(numSamples));
+	var upperRange = prob_query + 2 * (stdDev / Math.sqrt(numSamples));
+	var interval = [];
+
+	interval.push(lowerRange);
+	interval.push(upperRange);
+	return interval;
 }
 
 /**
