@@ -121,7 +121,7 @@ PokeClient = (function(superClass) {
   };
 
   PokeClient.prototype._handle = function(data) {
-    console.log(data);
+    //console.log(data);
     var i, len, message, messages, results;
     this.emit('internal:raw', data);
     messages = this._lex(data);
@@ -209,6 +209,15 @@ PokeClient = (function(superClass) {
           break;
         case MESSAGE_TYPES.ROOM_MESSAGES.RAW:
           this.emit('chat:raw', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.REQUEST:
+          this.emit('battle:request', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.START:
+          this.emit('battle:start', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MAJOR.SWITCH:
+          this.emit('battle:switch', message);
           break;
         case MESSAGE_TYPES.OTHER.UNKNOWN:
           this.emit('internal:unknown', message);
