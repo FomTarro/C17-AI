@@ -1,0 +1,5 @@
+sample stress=high 100
+sample stress=high 100 humidity=medium temp=cold icy=false snow=true cloudy=true exams=true day=weekday
+sample stress=high 100 temp=cold snow=false
+sample stress=high 100 day=weekday icy=true cloudy=true
+sample stress=high 100 humidy=low snow=true exams=false
