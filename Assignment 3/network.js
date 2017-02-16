@@ -124,53 +124,53 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 			
 		str_val = network.topNodes[0].children[1].children[1].CPT.QueryValue(clo, sno, exa);
 		
-		//all values read in or simulated
+		//all values simulated
 		for(var j = 0; j < observedNodes.length && !reject; j++){
 			if(observedNodes[j].node.toLowerCase() == "humidity"){
 				if(observedNodes[j].value.toLowerCase() == hum)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
 			else if(observedNodes[j].node.toLowerCase() == "temperature"){
 				if(observedNodes[j].value.toLowerCase() == tem)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
 			else if(observedNodes[j].node.toLowerCase() == "day"){
 				if(observedNodes[j].value.toLowerCase() == da)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
 			else if(observedNodes[j].node.toLowerCase() == "icy"){
 				if(observedNodes[j].value.toLowerCase() == ice)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
 			else if(observedNodes[j].node.toLowerCase() == "snow"){
 				if(observedNodes[j].value.toLowerCase() == sno)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
 			else if(observedNodes[j].node.toLowerCase() == "cloudy"){
 				if(observedNodes[j].value.toLowerCase() == clo)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
 			else if(observedNodes[j].node.toLowerCase() == "exams"){
 				if(observedNodes[j].value.toLowerCase() == exa)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
 			else if(observedNodes[j].node.toLowerCase() == "stress"){
 				if(observedNodes[j].value.toLowerCase() == str)
-					samples++;
+					samples += 0;
 				else
 					reject = true;
 			}
@@ -178,6 +178,7 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 		
 		//if the sample has not been rejected
 		if(!reject){
+			samples++;
 			if(queryNode.node.toLowerCase() == "humidity"){
 				if(queryNode.value.toLowerCase() == hum)
 					accepted++;
@@ -213,20 +214,20 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 		}
 	}
 	
-	console.log("Humidity: " + hum + " = " + hum_val);
+	/*console.log("Humidity: " + hum + " = " + hum_val);
 	console.log("Temperature: " + tem + " = " + tem_val);
 	console.log("Day: " + da + " = " + da_val);
 	console.log("Icy: " + ice + " = " + ice_val);
 	console.log("Snow: " + sno + " = " + sno_val);
 	console.log("Exam: " + exa + " = " + exa_val);
 	console.log("Cloudy: " + clo + " = " + clo_val);
-	console.log("Stress: " + str + " = " + str_val);
+	console.log("Stress: " + str + " = " + str_val);*/
 	
 	console.log("Samples: " + samples);	
 	console.log("Accepted Samples: " + accepted);
 	
 	if(observedNodes.length > 0)
-		console.log("Probability: " + ((accepted/samples)/(samples/iterations)));
+		console.log("Probability: " + ((accepted/samples)));
 	else
 		console.log("Probability: " + ((accepted/iterations)));
 }
