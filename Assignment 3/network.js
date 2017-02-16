@@ -223,8 +223,8 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 	console.log("Cloudy: " + clo + " = " + clo_val);
 	console.log("Stress: " + str + " = " + str_val);*/
 	
-	console.log("Samples: " + samples);	
-	console.log("Accepted Samples: " + accepted);
+	console.log("Completed Samples: " + samples);	
+	console.log("Non-Rejected Samples: " + accepted);
 	
 	if(observedNodes.length == 0)
 		samples = iterations;
