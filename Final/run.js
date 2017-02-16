@@ -1,36 +1,41 @@
 var PokeClient = require("./PokeClient/client");
-var client = new PokeClient();
-var selfID = "PokeTron5000"
+var mon = require('./mon');
+var _client = new PokeClient();
+var _selfID = "PokeTron5000"
 
-client.connect();
+var _ourTeam = [];
+var _theirTeam =[];
+var _rules = [];
+
+_client.connect();
 
 // Websocket has connected.
-client.on('ready', function() {
-  client.login(selfID, 'cs4341');
+_client.on('ready', function() {
+  _client.login(_selfID, 'cs4341');
 });
 
 // Successful login.
-client.on('login', function(event) {
+_client.on('login', function(event) {
   console.log('Logged in as:', event.data.username);
 });
 
 // Login failed.
-client.on('error:login', function(err) {
+_client.on('error:login', function(err) {
   console.log('Error encountered while logging in:', err.message);
 });
 
 // A message has been recieved from another player
-client.on('chat:private', function(event){
+_client.on('chat:private', function(event){
   console.log(event.data.sender.trim() + ": " + event.data.message)
-  if(event.data.sender.trim() != selfID){
-     client.send("/pm" + event.data.sender +  ", <I AM A ROBOT>")
+  if(event.data.sender.trim() != _selfID){
+     _client.send("/pm" + event.data.sender +  ", <I AM A ROBOT>")
   }
 });
 
 // BATTLING EVENTS //
 
 // A battle challenge from another user has been received.
-client.on('self:challenges', function(event) {
+_client.on('self:challenges', function(event) {
   var user = '';
   for(var key in event.data.challengesFrom){
     if(key != undefined)
@@ -38,40 +43,54 @@ client.on('self:challenges', function(event) {
   }
   if(user != undefined && user != null && user != ''){
     console.log(user + " would like to battle!");
-    client.send("/accept " + user)
+    _client.send("/accept " + user)
   }
 });
 
 // A room has been joined. It might be a battle!
-client.on('room:joined', function(event) {
+_client.on('room:joined', function(event) {
   //console.log(JSON.stringify(event));
-  console.log("--------------------------");
+  console.log("----- " + event.room);
   if(event.data == 'battle'){
     // be polite
-    client.send("GG!", event.room)
+    _client.send("gl;hf!", event.room)
     // give up
-    client.send("/forfeit", event.room);
+    //_client.send("/forfeit", event.room);
     // get out
-    client.send("/leave", event.room);
+    //_client.send("/leave", event.room);
   }
 });
 
+_client.on('battle:rule', function(event){
+  console.log(JSON.stringify(event.data));
+  for(var i = 0; i < event.data.length; i++){
+    _rules[i] = event.data[i];
+  }
+});
 // something is being asked 
-client.on('battle:request', function(event){
-  //console.log(JSON.stringify(event.data));
-  console.log("our team:")
+_client.on('battle:request', function(event){
+  console.log(JSON.stringify(event.data));
+  //console.log("our team:")
   for(var i = 0; i < event.data.side.pokemon.length; i++){
-    console.log(JSON.stringify(event.data.side.pokemon[i].details))
+    _ourTeam[i] = event.data.side.pokemon[i];
+    console.log(JSON.stringify(_ourTeam[i].details));
   }
 });
 
-client.on('battle:switch', function(event){
+_client.on('battle:switch', function(event){
   //console.log(JSON.stringify(event.data));
   if(event.data.pokemon.includes('p1a')){
     console.log("P1 sends out: " + event.data.details + " with " + event.data.hp + "HP");
   }
   else if(event.data.pokemon.includes('p2a')){
     console.log("P2 sends out: " + event.data.details + " with " + event.data.hp  + "HP");
+    if(!_theirTeam.includes(event.data.pokemon)){
+      _theirTeam.push(event.data.pokemon);
+    }
+  }
+  console.log("their team:")
+   for(var i = 0; i < _theirTeam.length; i++){
+    console.log(JSON.stringify(_theirTeam[i]))
   }
   //console.log("Team Comp: " + JSON.stringify(event.data.side.pokemon))
 });

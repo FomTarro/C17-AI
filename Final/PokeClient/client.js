@@ -216,7 +216,13 @@ PokeClient = (function(superClass) {
         case MESSAGE_TYPES.BATTLE.START:
           this.emit('battle:start', message);
           break;
+        case MESSAGE_TYPES.BATTLE.RULE:
+          this.emit('battle:rule', message);
+          break;
         case MESSAGE_TYPES.BATTLE.ACTIONS.MAJOR.SWITCH:
+          this.emit('battle:switch', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MAJOR.DRAG:
           this.emit('battle:switch', message);
           break;
         case MESSAGE_TYPES.OTHER.UNKNOWN:
