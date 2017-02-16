@@ -520,10 +520,10 @@ var CPT = {
 					if(isSnow == "true") return 0.3001;
 					if(isSnow == "false") return 0.101;
 				}
-				if (!isSnow && day == CPT.Day.WEEKEND) return 0.001;
-				if (!isSnow && day == CPT.Day.WEEKDAY) return 0.01;
-				if (isSnow && day == CPT.Day.WEEKEND) return 0.0001;
-				if (isSnow && day == CPT.Day.WEEKDAY) return 0.3;
+				if (isSnow == "false" && day == CPT.Day.WEEKEND) return 0.001;
+				if (isSnow == "false" && day == CPT.Day.WEEKDAY) return 0.01;
+				if (isSnow == "true" && day == CPT.Day.WEEKEND) return 0.0001;
+				if (isSnow == "true" && day == CPT.Day.WEEKDAY) return 0.3;
 			} else {
 				if(isSnow + day == -2) return 3.5989;
 				if(isSnow == -1) {
@@ -534,10 +534,10 @@ var CPT = {
 					if(isSnow == "true") return 1.6999;
 					if(isSnow == "false") return 1.899;
 				}
-				if (!isSnow && day == CPT.Day.WEEKEND) return 1 - 0.001;
-				if (!isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.01;
-				if (isSnow && day == CPT.Day.WEEKEND) return 1 - 0.0001;
-				if (isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.3;
+				if (isSnow == "false" && day == CPT.Day.WEEKEND) return 1 - 0.001;
+				if (isSnow == "false" && day == CPT.Day.WEEKDAY) return 1 - 0.01;
+				if (isSnow == "true" && day == CPT.Day.WEEKEND) return 1 - 0.0001;
+				if (isSnow == "true" && day == CPT.Day.WEEKDAY) return 1 - 0.3;
 			}
 		}
 	},
@@ -574,10 +574,10 @@ var CPT = {
 					if(isSnow == "true") return 0.6;
 					if(isSnow == "false") return 0.21;
 				}
-				if(!isSnow && !isExams) return 0.01;
-				if(!isSnow && isExams) return 0.2;
-				if(isSnow && !isExams) return 0.1;
-				if(isSnow && isExams) return 0.5;
+				if(isSnow == "false" && isExams == "false") return 0.01;
+				if(isSnow == "false" && isExams == "true") return 0.2;
+				if(isSnow == "true" && isExams == "false") return 0.1;
+				if(isSnow == "true" && isExams == "true") return 0.5;
 			} else {
 				if(isSnow + isExams == -1) return 3.19;
 				if(isSnow == -1) {
@@ -588,10 +588,10 @@ var CPT = {
 					if(isSnow == "true") return 1.4;
 					if(isSnow == "false") return 1.79;
 				}
-				if(!isSnow && !isExams) return 1 - 0.01;
-				if(!isSnow && isExams) return 1 - 0.2;
-				if(isSnow && !isExams) return 1 - 0.1;
-				if(isSnow && isExams) return 1 - 0.5;
+				if(isSnow == "false" && isExams == "false") return 1 - 0.01;
+				if(isSnow == "false" && isExams == "true") return 1 - 0.2;
+				if(isSnow == "true" && isExams == "false") return 1 - 0.1;
+				if(isSnow == "true" && isExams == "true") return 1 - 0.5;
 			}
 		}
 	}
