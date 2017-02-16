@@ -81,11 +81,23 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 		
 		//now we need to determine the values of observed nodes that are icy or snow
 		for(var j = 0; j < observedNodes.length; j++){		
+			for(var i = 0; i < 2; i++){
+				if(network.topNodes[0].children[i].name.toLowerCase() == observedNodes[j].node){
+					if (i == 0)
+						ice = network.topNodes[0].children[i].CPT.QueryValue(observedNodes[j].value.toLowerCase(), hum, tem);
+					else if (i == 1)
+						sno = network.topNodes[0].children[i].CPT.QueryValue(observedNodes[j].value.toLowerCase(), hum, tem);
+				}
+			}
+		}
+		
+		//now we need to simulate the unknown icy or snow nodes
+		for(var j = 0; j < observedNodes.length; j++){		
 			//find the value for top level nodes
 			for(var i = 0; i < 2; i++){
-				if (i == 0 && hum == -1)
+				if (i == 0 && ice == -1)
 					ice = network.topNodes[0].children[i].CPT.SimulateValue(Math.random(), hum, tem);
-				else if (i == 1 && tem == -1)
+				else if (i == 1 && sno == -1)
 					sno = network.topNodes[0].children[i].CPT.SimulateValue(Math.random(), hum, tem);
 			}
 		}
@@ -154,9 +166,18 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 	    }*/
 	}
 	
-	console.log("Samples: " + samples);	
+	console.log("Humidity: " + hum);
+	console.log("Temperature: " + tem);
+	console.log("Day: " + da);
+	console.log("Icy: " + ice);
+	console.log("Snow: " + sno);
+	console.log("Exam: " + exa);
+	console.log("Cloudy: " + clo);
+	console.log("Stressed: " + str);
+	
+	/*console.log("Samples: " + samples);	
 	console.log("Accepted Samples: " + accepted);
-	console.log("Probability: " + ((accepted/samples)/(samples/iterations)));
+	console.log("Probability: " + ((accepted/samples)/(samples/iterations)));*/
 }
 
 /**
