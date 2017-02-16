@@ -62,21 +62,25 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 		rand = Math.random();
 		reject = false;
 		
+		hum = -1;
+		tem = -1;
+		da = -1;
+		ice = -1;
+		sno = -1;
+		clo = -1;
+		exa = -1;
+		str = -1;
+		
+		hum_val = -1;
+		tem_val = -1;
+		da_val = -1;
+		ice_val = -1;
+		sno_val = -1;
+		clo_val = -1;
+		exa_val = -1;
+		str_val = -1;
+		
 		//collect the samples, this is the probability of all the observed nodes separated by logical ands
-		//first we need to determine the values of observed nodes that are the top nodes
-		for(var j = 0; j < observedNodes.length; j++){		
-			//find the value for top level nodes
-			for(var i = 0; i < 3; i++){
-	            if(network.topNodes[i].name.toLowerCase() == observedNodes[j].node){
-					if (i == 0)
-						hum = observedNodes[j].value.toLowerCase();
-					else if (i == 1)
-						tem = observedNodes[j].value.toLowerCase();
-					else if (i == 2)
-						da = observedNodes[j].value.toLowerCase();
-	            }
-	        }
-		}
 		
 		//next we simulate the values of the top nodes we do not know
 		for(var i = 0; i < 3; i++){     
@@ -92,18 +96,6 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 	    tem_val = network.topNodes[1].CPT.QueryValue(tem);
 	    da_val = network.topNodes[2].CPT.QueryValue(da);
 		
-		//now we need to determine the values of observed nodes that are icy or snow
-		for(var j = 0; j < observedNodes.length; j++){		
-			for(var i = 0; i < 2; i++){
-				if(network.topNodes[0].children[i].name.toLowerCase() == observedNodes[j].node){
-					if (i == 0)
-						ice = observedNodes[j].value.toLowerCase();
-					else if (i == 1)
-						sno = observedNodes[j].value.toLowerCase();
-				}
-			}
-		}
-		
 		//now we need to simulate the unknown icy or snow nodes		
 		for (var i = 0; i < 2; i++) {
 			if (i == 0 && ice == -1)
@@ -114,18 +106,6 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 		
 		ice_val = network.topNodes[0].children[0].CPT.QueryValue(ice, hum_val, tem_val);
 		sno_val = network.topNodes[0].children[1].CPT.QueryValue(sno, hum_val, tem_val);
-		
-		//now we need to determine the values of observed nodes that are cloudy or exams
-		for(var j = 0; j < observedNodes.length; j++){		
-			for(var i = 0; i < 3; i++){
-				if(network.topNodes[0].children[1].children[i].name.toLowerCase() == observedNodes[j].node){
-					if (i == 0)
-						clo = observedNodes[j].value.toLowerCase();
-					else if (i == 2)
-						exa = observedNodes[j].value.toLowerCase();
-				}
-			}
-		}
 		
 		//now we need to simulate the unknown cloudy or exam nodes		
 		for (var i = 0; i < 3; i++) {
@@ -138,18 +118,99 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 		clo_val = network.topNodes[0].children[1].children[0].CPT.QueryValue(clo, sno);
 		exa_val = network.topNodes[0].children[1].children[2].CPT.QueryValue(clo, sno, da_val);
 		
-		//now we need to determine the values of observed nodes that is stressed
-		for(var j = 0; j < observedNodes.length; j++){					
-			if (network.topNodes[0].children[1].children[1].name.toLowerCase() == observedNodes[j].node) {
-				str = observedNodes[j].value.toLowerCase();
-			}
-		}
-		
 		//now we need to simulate the unknown stressed	
 		if (str == -1)
 			str = network.topNodes[0].children[1].children[1].CPT.SimulateValue(Math.random(), sno, exa);
 			
 		str_val = network.topNodes[0].children[1].children[1].CPT.QueryValue(clo, sno, exa);
+		
+		//all values read in or simulated
+		for(var j = 0; j < observedNodes.length && !reject; j++){
+			if(observedNodes[j].node.toLowerCase() == "humidity"){
+				if(observedNodes[j].value.toLowerCase() == hum)
+					samples++;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "temperature"){
+				if(observedNodes[j].value.toLowerCase() == tem)
+					samples++;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "day"){
+				if(observedNodes[j].value.toLowerCase() == da)
+					samples++;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "icy"){
+				if(observedNodes[j].value.toLowerCase() == ice)
+					samples++;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "snow"){
+				if(observedNodes[j].value.toLowerCase() == sno)
+					samples++;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "cloudy"){
+				if(observedNodes[j].value.toLowerCase() == clo)
+					samples++;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "exams"){
+				if(observedNodes[j].value.toLowerCase() == exa)
+					samples++;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "stress"){
+				if(observedNodes[j].value.toLowerCase() == str)
+					samples++;
+				else
+					reject = true;
+			}
+		}
+		
+		//if the sample has not been rejected
+		if(!reject){
+			if(queryNode.node.toLowerCase() == "humidity"){
+				if(queryNode.value.toLowerCase() == hum)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "temperature"){
+				if(queryNode.value.toLowerCase() == ice)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "day"){
+				if(queryNode.value.toLowerCase() == da)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "icy"){
+				if(queryNode.value.toLowerCase() == ice)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "snow"){
+				if(queryNode.value.toLowerCase() == sno)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "cloudy"){
+				if(queryNode.value.toLowerCase() == clo)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "exams"){
+				if(queryNode.value.toLowerCase() == exa)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "stress"){
+				if(queryNode.value.toLowerCase() == str)
+					accepted++;
+			}
+		}
 	}
 	
 	console.log("Humidity: " + hum + " = " + hum_val);
@@ -159,11 +220,15 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 	console.log("Snow: " + sno + " = " + sno_val);
 	console.log("Exam: " + exa + " = " + exa_val);
 	console.log("Cloudy: " + clo + " = " + clo_val);
-	console.log("Stressed: " + str + " = " + str_val);
+	console.log("Stress: " + str + " = " + str_val);
 	
-	/*console.log("Samples: " + samples);	
+	console.log("Samples: " + samples);	
 	console.log("Accepted Samples: " + accepted);
-	console.log("Probability: " + ((accepted/samples)/(samples/iterations)));*/
+	
+	if(observedNodes.length > 0)
+		console.log("Probability: " + ((accepted/samples)/(samples/iterations)));
+	else
+		console.log("Probability: " + ((accepted/iterations)));
 }
 
 /**
