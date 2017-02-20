@@ -3,9 +3,14 @@ var mon = require('./mon');
 var _client = new PokeClient();
 var _selfID = "PokeTron5000"
 
+
 var _ourTeam = [];
 var _theirTeam =[];
 var _rules = [];
+
+// variables for which player in the room is who
+var _weAre = ''//'p1a';
+var _theyAre = ''//'p2a'; 
 
 _client.connect();
 
@@ -28,7 +33,7 @@ _client.on('error:login', function(err) {
 _client.on('chat:private', function(event){
   console.log(event.data.sender.trim() + ": " + event.data.message)
   if(event.data.sender.trim() != _selfID){
-     _client.send("/pm" + event.data.sender +  ", <I AM A ROBOT>")
+     _client.send("/pm" + event.data.sender +  ", <I am a robot designed to play Random Battles!>")
   }
 });
 
@@ -47,17 +52,23 @@ _client.on('self:challenges', function(event) {
   }
 });
 
-// A room has been joined. It might be a battle!
-_client.on('room:joined', function(event) {
-  //console.log(JSON.stringify(event));
-  console.log("----- " + event.room);
-  if(event.data == 'battle'){
+// A Battle starts
+_client.on('battle:start', function(event) {
+   console.log("\n" + event.room);
     // be polite
     _client.send("gl;hf!", event.room)
     // give up
     //_client.send("/forfeit", event.room);
     // get out
     //_client.send("/leave", event.room);
+});
+
+_client.on('battle:player', function(event){
+  if(event.data.username.includes(_selfID)){
+    _weAre = event.data.player + 'a';
+  }
+  else{
+    _theyAre = event.data.player + 'a';
   }
 });
 
@@ -69,7 +80,7 @@ _client.on('battle:rule', function(event){
 });
 // something is being asked 
 _client.on('battle:request', function(event){
-  console.log(JSON.stringify(event.data));
+  //console.log(JSON.stringify(event.data));
   //console.log("our team:")
   for(var i = 0; i < event.data.side.pokemon.length; i++){
     _ourTeam[i] = event.data.side.pokemon[i];
@@ -79,19 +90,43 @@ _client.on('battle:request', function(event){
 
 _client.on('battle:switch', function(event){
   //console.log(JSON.stringify(event.data));
-  if(event.data.pokemon.includes('p1a')){
-    console.log("P1 sends out: " + event.data.details + " with " + event.data.hp + "HP");
+
+  if(event.data.pokemon.includes(_weAre)){
+    console.log("We send out: " + event.data.details + " with " + event.data.hp + "HP");
   }
-  else if(event.data.pokemon.includes('p2a')){
-    console.log("P2 sends out: " + event.data.details + " with " + event.data.hp  + "HP");
-    if(!_theirTeam.includes(event.data.pokemon)){
-      _theirTeam.push(event.data.pokemon);
+  else if(event.data.pokemon.includes(_theyAre)){
+    console.log("They send out: " + event.data.details + " with " + event.data.hp  + "HP");
+    var monName = event.data.details.split(',')[0];
+    var switchedMon = new mon();
+    switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
+
+    /*  Do database queries for the builds used for this species in Randoms
+        Make estimates about remaining data fields based on those estimates
+
+        !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
+    */
+
+    if(!_theirTeam.includes(switchedMon)){
+      _theirTeam[monName] = switchedMon;
     }
-  }
-  console.log("their team:")
-   for(var i = 0; i < _theirTeam.length; i++){
-    console.log(JSON.stringify(_theirTeam[i]))
+    console.log("\nP2 REVEALED TEAM:")
+    for(var key in _theirTeam){
+      console.log(_theirTeam[key])
+    }
   }
   //console.log("Team Comp: " + JSON.stringify(event.data.side.pokemon))
 });
+
+_client.on('battle:move', function(event){
+  if(event.data.pokemon.includes(_theyAre)){
+    console.log("Opponent used: " + event.data.move + "!");
+    var user = event.data.pokemon.split(' ')[1];
+    //console.log(_theirTeam[user]);
+    /*
+    we know _theirTeam[user] knows event.data.move, so we can better estimate which build it is using. 
+    Re-evaluate estimates here.
+    */
+  }
+});
+
 

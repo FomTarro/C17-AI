@@ -5,6 +5,7 @@ function mon(){
     this.maxHP = 1;
     this.status ='';
     this.ability ='';
+    this.item = '';
     this.moves = [];
 
     return this;

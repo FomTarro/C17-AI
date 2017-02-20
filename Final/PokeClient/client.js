@@ -213,6 +213,9 @@ PokeClient = (function(superClass) {
         case MESSAGE_TYPES.BATTLE.REQUEST:
           this.emit('battle:request', message);
           break;
+        case MESSAGE_TYPES.BATTLE.PLAYER:
+          this.emit('battle:player', message);
+          break;
         case MESSAGE_TYPES.BATTLE.START:
           this.emit('battle:start', message);
           break;
@@ -224,6 +227,9 @@ PokeClient = (function(superClass) {
           break;
         case MESSAGE_TYPES.BATTLE.ACTIONS.MAJOR.DRAG:
           this.emit('battle:switch', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MAJOR.MOVE:
+          this.emit('battle:move', message);
           break;
         case MESSAGE_TYPES.OTHER.UNKNOWN:
           this.emit('internal:unknown', message);
