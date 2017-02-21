@@ -7,6 +7,10 @@ var _selfID = "PokeTron5000"
 var _ourTeam = [];
 var _theirTeam =[];
 var _rules = [];
+var _turnNum = 0;
+
+var _ourActiveMon
+var _theirActiveMon
 
 // variables for which player in the room is who
 var _weAre = ''//'p1a';
@@ -54,21 +58,27 @@ _client.on('self:challenges', function(event) {
 
 // A Battle starts
 _client.on('battle:start', function(event) {
-   console.log("\n" + event.room);
-    // be polite
-    _client.send("gl;hf!", event.room)
-    // give up
-    //_client.send("/forfeit", event.room);
-    // get out
-    //_client.send("/leave", event.room);
+  console.log("\n" + event.room);
+  _ourTeam = [];
+  _theirTeam = [];
+  // be polite
+  _client.send("gl;hf!", event.room)
+  _client.send("/timer on", event.room)
+  // give up
+  //_client.send("/forfeit", event.room);
+  // get out
+  //_client.send("/leave", event.room);
 });
 
 _client.on('battle:player', function(event){
-  if(event.data.username.includes(_selfID)){
-    _weAre = event.data.player + 'a';
-  }
-  else{
-    _theyAre = event.data.player + 'a';
+  //console.log(JSON.stringify(event))
+  if(event.data.username != undefined){
+    if(event.data.username.includes(_selfID)){
+      _weAre = event.data.player + 'a';
+    }
+    else{
+      _theyAre = event.data.player + 'a';
+    }
   }
 });
 
@@ -81,11 +91,30 @@ _client.on('battle:rule', function(event){
 // something is being asked 
 _client.on('battle:request', function(event){
   //console.log(JSON.stringify(event.data));
-  //console.log("our team:")
+  var response = '';
   for(var i = 0; i < event.data.side.pokemon.length; i++){
     _ourTeam[i] = event.data.side.pokemon[i];
-    console.log(JSON.stringify(_ourTeam[i].details));
+    if(_ourActiveMon == undefined){
+      _ourActiveMon = _ourTeam[0];
+    }
+    //console.log(JSON.stringify(_ourTeam[i]));
   }
+  _turnNum = event.data.rqid;
+
+  if(event.data.forceSwitch != undefined && event.data.forceSwitch.includes(true)){
+    // pick a random guy that isn't fainted.
+    do{
+      var switchChoice = getRandomInt(0, 5);
+      response = '/choose switch ' + (switchChoice+1)  + '|'+ _turnNum + ''
+    }while(_ourTeam[switchChoice].condition.includes('fnt'))
+  }
+  else{
+    var move = getRandomInt(1, _ourActiveMon.moves.length); // pick a random move
+    // check if _ourActiveMon.item.includes("choice")
+    response = '/choose move ' + move + '|' + _turnNum + '';
+  }
+  console.log(response);
+  _client.send(response, event.room)
 });
 
 _client.on('battle:switch', function(event){
@@ -93,34 +122,39 @@ _client.on('battle:switch', function(event){
 
   if(event.data.pokemon.includes(_weAre)){
     console.log("We send out: " + event.data.details + " with " + event.data.hp + "HP");
+    for(var i = 0; i < _ourTeam.length; i++){
+      if(_ourTeam[i].active = true){
+        _ourActiveMon = _ourTeam[i];
+        break;
+      }
+    }
   }
   else if(event.data.pokemon.includes(_theyAre)){
     console.log("They send out: " + event.data.details + " with " + event.data.hp  + "HP");
-    var monName = event.data.details.split(',')[0];
+    var monName = parsePokeName(event.data.pokemon);
     var switchedMon = new mon();
     switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
-
-    /*  Do database queries for the builds used for this species in Randoms
+    if(!_theirTeam.includes(switchedMon)){
+      _theirTeam[monName] = switchedMon;
+       /*  Do database queries for the builds used for this species in Randoms
         Make estimates about remaining data fields based on those estimates
 
         !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
     */
-
-    if(!_theirTeam.includes(switchedMon)){
-      _theirTeam[monName] = switchedMon;
     }
     console.log("\nP2 REVEALED TEAM:")
     for(var key in _theirTeam){
       console.log(_theirTeam[key])
     }
   }
+  _theirActiveMon = _theirTeam[monName]
   //console.log("Team Comp: " + JSON.stringify(event.data.side.pokemon))
 });
 
 _client.on('battle:move', function(event){
   if(event.data.pokemon.includes(_theyAre)){
     console.log("Opponent used: " + event.data.move + "!");
-    var user = event.data.pokemon.split(' ')[1];
+    var user = parsePokeName(event.data.pokemon);
     //console.log(_theirTeam[user]);
     /*
     we know _theirTeam[user] knows event.data.move, so we can better estimate which build it is using. 
@@ -129,4 +163,28 @@ _client.on('battle:move', function(event){
   }
 });
 
+_client.on('battle:damage', function(event){
+  //console.log("damage!!!")
+  //console.log(JSON.stringify(event))
+  if(event.data.pokemon.includes(_theyAre)){
+    // update their hp
+    //_theirTeam[parsePokeName(event.data.pokemon)].currentHP =
+  }
+});
 
+_client.on('battle:win', function(event){
+  console.log(event.room + " over!")
+  if(event.data.includes(_weAre)){
+    // we are winner! nice!
+  }
+  _client.send("gg!", event.room);
+  _client.send("/leave", event.room);
+});
+
+function parsePokeName(name){
+  return name.split(' ')[1];
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}

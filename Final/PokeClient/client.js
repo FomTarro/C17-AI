@@ -219,6 +219,9 @@ PokeClient = (function(superClass) {
         case MESSAGE_TYPES.BATTLE.START:
           this.emit('battle:start', message);
           break;
+        case MESSAGE_TYPES.BATTLE.WIN:
+          this.emit('battle:win', message);
+          break;
         case MESSAGE_TYPES.BATTLE.RULE:
           this.emit('battle:rule', message);
           break;
@@ -230,6 +233,12 @@ PokeClient = (function(superClass) {
           break;
         case MESSAGE_TYPES.BATTLE.ACTIONS.MAJOR.MOVE:
           this.emit('battle:move', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.DAMAGE:
+          this.emit('battle:damage', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.ITEM:
+          this.emit('battle:item', message);
           break;
         case MESSAGE_TYPES.OTHER.UNKNOWN:
           this.emit('internal:unknown', message);
