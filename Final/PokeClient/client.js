@@ -115,7 +115,6 @@ PokeClient = (function(superClass) {
       room = '';
     }
     payload = room + "|" + message;
-    //console.log(payload)
     this.socket.send(payload);
     return this.emit('internal:send', payload);
   };
@@ -239,6 +238,15 @@ PokeClient = (function(superClass) {
           break;
         case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.ITEM:
           this.emit('battle:item', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.ENDITEM:
+          this.emit('battle:enditem', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.ABILITY:
+          this.emit('battle:ability', message);
+          break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.ENDABILITY:
+          this.emit('battle:endability', message);
           break;
         case MESSAGE_TYPES.OTHER.UNKNOWN:
           this.emit('internal:unknown', message);
