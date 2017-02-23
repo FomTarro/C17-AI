@@ -12,7 +12,7 @@ if (process.argv.length < 4) {
     console.error('node sample.js <query node> <iterations> (<observed node 1> <observed node 2> ...)');
     process.exit(1);
 }
-
+console.time("queryTime");
 var _queryNode =  nodeParser(process.argv[2].toLowerCase());
 var _iterations =  process.argv[3];
 var _observedNodes = [];
@@ -50,3 +50,4 @@ var netWork = new Network();
 netWork.Init();
 
 netWork.RejectionSampling(_queryNode,_observedNodes, netWork, _iterations);
+console.timeEnd("queryTime");
