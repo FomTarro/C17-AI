@@ -147,8 +147,9 @@ _client.on('battle:switch', function(event){
     switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
     if(!_theirTeam.includes(switchedMon)){
       _theirTeam[monName] = switchedMon;
-       /*  Do database queries for the builds used for this species in Randoms
-        Make estimates about remaining data fields based on those estimates
+       /*  Do database queries for the builds used for this species in Randoms */
+      var moves = getPossibleBattleMoves(switchedMon);
+      /* Make estimates about remaining data fields based on those estimates
 
         !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
     */
@@ -226,4 +227,68 @@ function parsePokeName(name){
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+//AI Functions
+
+function getPossibleBattleMoves(pokemon) {
+  if(BattleFormatsData[pokemon.name] !== undefined 
+     && BattleFormatsData[pokemon.name].randomBattleMoves !== undefined) {
+    return BattleFormatsData[pokemon.name].randomBattleMoves;
+  }
+}
+
+function minNode(data) {
+  this.data = data;
+  this.value = NaN;
+  //Based on the given data, calculate the value of the node
+  // i.e; damage, heuristics, possibility of switching... etc
+  this.CalculateValue = function() {/*TODO*/};
+  this.CalculateValue();
+  return this;
+}
+
+function maxNode(data) {
+  this.data = data;
+  this.value = NaN;
+  //Based on the given data, calculate the value of the node
+  // i.e; damage, heuristics, possibility of switching... etc
+  this.CalculateValue = function() {/*TODO*/};
+  this.CalculateValue();
+  return this;
+}
+
+var predictionTree = {};
+
+function generatePredictionTree() {
+  //This tree will always have 5 nodes (4 battle moves, 1 switch)
+  
+}
+
+function updatePredictionTree() {
+  //if by any chance a move affects the values of future nodes
+  //i.e knockout results in player only having one pokemon left 
+}
+
+//Pseudocode from Wikipedia
+//Ideally, I think alphabeta pruning algo might suit this better 
+function minimax(node, depth, maximizingPlayer) {
+  //TODO
+  if(depth == 0 || node.children == undefined)
+    return node.value;
+  if(maximizingPlayer) {
+    var bestValue = Number.NEGATIVE_INFINITY;
+    for(child in node.children) {
+      var v = minimax(child, depth - 1, false);
+      bestValue = max(bestValue, v);
+    }
+    return bestValue;
+  } else {
+    //I guess in this case we do nothing since we don't know
+    //what the other player is doing
+  }
+}
+
+function max(a, b) {
+  return (a > b) ? a : b;
 }
