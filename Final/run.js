@@ -49,6 +49,10 @@ _client.on('chat:private', function(event){
   }
 });
 
+// A A message has been recieved in a room you are in
+_client.on('chat:public', function(event) {
+});
+
 // BATTLING EVENTS //
 
 // A battle challenge from another user has been received.

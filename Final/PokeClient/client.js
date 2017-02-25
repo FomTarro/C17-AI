@@ -248,6 +248,9 @@ PokeClient = (function(superClass) {
         case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.ENDABILITY:
           this.emit('battle:endability', message);
           break;
+        case MESSAGE_TYPES.BATTLE.ACTIONS.MINOR.MESSAGE:
+          this.emit('battle:message', message);
+          break;
         case MESSAGE_TYPES.OTHER.UNKNOWN:
           this.emit('internal:unknown', message);
       }
