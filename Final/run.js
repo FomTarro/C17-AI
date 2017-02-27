@@ -5,6 +5,8 @@ var _client = new PokeClient();
 var Credentials = require("./credentials");
 var _creds = new Credentials();
 
+var BattleFormatsData = require("./formats-data");
+
 // our team, stored in index order
 var _ourTeam = [];
 // their team, stored as a dictionary with species names as keys
@@ -23,7 +25,6 @@ var _weAre = '';
 var _theyAre = ''; 
 
 
-
 _client.connect();
 
 // Websocket has connected.
@@ -34,6 +35,7 @@ _client.on('ready', function() {
 // Successful login.
 _client.on('login', function(event) {
   console.log('Logged in as:', event.data.username);
+  _client.send("/avatar 167")
 });
 
 // Login failed.
@@ -51,6 +53,10 @@ _client.on('chat:private', function(event){
 
 // A A message has been recieved in a room you are in
 _client.on('chat:public', function(event) {
+});
+
+_client.on('chat:html', function(event) {
+  console.log(event.data)
 });
 
 // BATTLING EVENTS //
@@ -148,7 +154,10 @@ _client.on('battle:switch', function(event){
     if(!_theirTeam.includes(switchedMon)){
       _theirTeam[monName] = switchedMon;
        /*  Do database queries for the builds used for this species in Randoms */
-      var moves = getPossibleBattleMoves(switchedMon);
+      var moves = getPossibleBattleMoves(_theirTeam[monName]);
+      console.log("POSSIBLE MOVES:")
+      console.log(moves)
+      _client.send("/weakness " + monName, event.room)
       /* Make estimates about remaining data fields based on those estimates
 
         !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
@@ -187,19 +196,19 @@ _client.on('battle:damage', function(event){
 });
 
 _client.on('battle:item', function(event){
-  console.log('item')
-  console.log(JSON.stringify(event))
+  //console.log('item')
+  //console.log(JSON.stringify(event))
   _theirTeam[parsePokeName(event.data.pokemon)].item = event.data.item;
 });
 
 _client.on('battle:enditem', function(event){
-  console.log('enditem')
-   console.log(JSON.stringify(event))
+  //console.log('enditem')
+  //console.log(JSON.stringify(event))
   _theirTeam[parsePokeName(event.data.pokemon)].item = 'NONE'
 });
 
 _client.on('battle:ability', function(event){
-  console.log(JSON.stringify(event))
+  //console.log(JSON.stringify(event))
 });
 
 
@@ -222,7 +231,8 @@ _client.on('internal:send', function(event){
 
 // parses 'p1a: <SPECIES>' to just '<SPECIES>' 
 function parsePokeName(name){
-  return name.split(' ')[1];
+  var splitName = name.split(':')[1].trim();
+  return splitName;
 }
 
 function getRandomInt(min, max) {
@@ -232,9 +242,12 @@ function getRandomInt(min, max) {
 //AI Functions
 
 function getPossibleBattleMoves(pokemon) {
-  if(BattleFormatsData[pokemon.name] !== undefined 
-     && BattleFormatsData[pokemon.name].randomBattleMoves !== undefined) {
-    return BattleFormatsData[pokemon.name].randomBattleMoves;
+  var species = pokemon.species.toLowerCase();
+  // need to compress spaces out of mon name, apparently 
+  console.log(species)
+  if(BattleFormatsData.BattleFormatsData[species] !== undefined 
+     && BattleFormatsData.BattleFormatsData[species].randomBattleMoves !== undefined) {
+    return BattleFormatsData.BattleFormatsData[species].randomBattleMoves;
   }
 }
 
