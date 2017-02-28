@@ -1,4 +1,4 @@
-function move {
+function move() {
 	/* possible callback functions not included:
 	 * basePowerCallback
 	 * onHit
@@ -99,5 +99,7 @@ function move {
 
 	this.noFaint = null; // boolean true/false
 
-
+	return this;
 }
+
+module.exports = move;
