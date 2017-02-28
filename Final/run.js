@@ -1,5 +1,6 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
+var MoveData = require('./PokeClient/moves').BattleMovedex;
 var _client = new PokeClient();
 
 var Credentials = require("./credentials");
@@ -53,6 +54,7 @@ _client.on('chat:private', function(event){
 
 // A A message has been recieved in a room you are in
 _client.on('chat:public', function(event) {
+  console.log(event.data);
 });
 
 _client.on('chat:html', function(event) {
@@ -81,6 +83,7 @@ _client.on('battle:start', function(event) {
   _theirTeam = [];
   _client.send("gl;hf!", event.room)
   _client.send("/timer on", event.room)
+  QueryMove("tackle");
 });
 
 // Get player information, learn if we are p1 or p2 in this battle.
@@ -240,6 +243,14 @@ function getRandomInt(min, max) {
 }
 
 //AI Functions
+
+function QueryMove(move) {
+  console.log(MoveData[move]);
+}
+
+function ParseMoveData(data) {
+
+}
 
 function getPossibleBattleMoves(pokemon) {
   var species = pokemon.species.toLowerCase();
