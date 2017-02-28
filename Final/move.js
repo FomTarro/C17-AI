@@ -1,4 +1,3 @@
-
 function move() {
 	/* possible callback functions not included:
 	 * basePowerCallback
