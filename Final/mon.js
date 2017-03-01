@@ -7,6 +7,8 @@ function mon(){
     this.ability ='';
     this.item = '';
     this.moves = [];
+    this.weaknesses = [];
+    this.resistances = [];
 
     return this;
 }
