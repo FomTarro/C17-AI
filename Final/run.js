@@ -1,8 +1,8 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
+var Algorithm = require('./simple_algorithm');
 var _client = new PokeClient();
-
 var Credentials = require("./credentials");
 var _creds = new Credentials();
 
@@ -27,6 +27,8 @@ var _theirActiveMon;
 var _weAre = '';
 var _theyAre = ''; 
 
+//Bool Flags So we can wait
+var _weaknessFound = false;
 
 _client.connect();
 
@@ -119,6 +121,7 @@ _client.on('chat:html', function(event) {
         _theirTeam[key].immunities = effectivenessJSON.immunities;
       }
     }
+    _weaknessFound = true;
   }
 });
 
@@ -144,7 +147,6 @@ _client.on('battle:start', function(event) {
   _theirTeam = [];
   _client.send("gl;hf!", event.room)
   _client.send("/timer on", event.room)
-  QueryMove("tackle");
 });
 
 // Get player information, learn if we are p1 or p2 in this battle.
@@ -167,7 +169,8 @@ _client.on('battle:rule', function(event){
 
 // A request is being made of us. We must decide how to respond.
 _client.on('battle:request', function(event){
-  //console.log(JSON.stringify(event.data));
+  console.log(event);
+  console.log(JSON.stringify(event.data));
   _reqNum = event.data.rqid;
   //console.log("OUR TEAM:")
   for(var i = 0; i < event.data.side.pokemon.length; i++){
@@ -187,14 +190,29 @@ _client.on('battle:request', function(event){
       var switchChoice = getRandomInt(0, 5);
       response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
     }while(_ourTeam[switchChoice].condition.includes('fnt'))
+    _client.send(response, event.room)
   }
   else{
-    // pick a random move from our move list
-    var move = getRandomInt(1, _ourActiveMon.moves.length); 
-    response = '/choose move ' + move + '|' + _reqNum;
-  }
+    // pick a random move from our move list **OLD CODE**
+    //var move = getRandomInt(1, _ourActiveMon.moves.length); 
 
-  _client.send(response, event.room)
+    //Run algorithm and Make an educated guess on what move to use next
+    //PriotizeSuperEffective(currPoke, teamPokes, enemyPoke)
+    // Set up a check every 500ms because we are still waiting for additional info to
+    // come in via separate commands.
+    var waitForSwitch = setInterval(function() {
+      //Once the flags are all set, we run the algo
+      if(_theirActiveMon != undefined && _weaknessFound) {
+        var move = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon);
+        console.log(move);
+        response = '/choose move ' + move + '|' + _reqNum;
+        _client.send(response, event.room);
+        //Reset flags and clear interval
+        _weaknessFound = false;
+        clearInterval(waitForSwitch);
+      }
+    }, 500);
+  }
 });
 
 // A switch has happened, either through deliberate switch or drag-out.

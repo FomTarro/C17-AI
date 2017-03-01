@@ -34,16 +34,20 @@ var switch_ID = 0;
 *  teamPokes: a list of all pokemon on the bot's team (including the pokemon currently on the field)
 *  enemyPoke: the opponent pokemon currently visible on the field
 */
-function PriotizeSuperEffective(currPoke, teamPokes, enemyPoke)
+function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 {
+
+	console.log(enemyPoke);	
+
 	// 4 moves the current bot pokemon can use
 	var moves = currPoke.moves;
 	// the list of the opposing pokemon team; starts empty and fills as switches happen
-	var enemyTeam = {};
+	var enemyTeam = [];
 	// known moves by the curr enemy field pokemon
-	var enemyPokeMoves = {};
+	var enemyPokeMoves = [];
 
 	// the type of the current enemy field poke
+	//BUG TODO: This returns undefined
 	var enemyType = enemyPoke.type;
 
 	var movePicked = false;
@@ -127,8 +131,12 @@ function searchMoves(moves, enemyType, effectiveness, isTeam)
 {
 	var move;
 	var movePicked = false;
-	var bestMoves = {};
+	var bestMoves = [];
 	var bestMoveForThisMon;
+
+	console.log("Moves: " + moves);
+	//BUG TODO: getting undefined for enemyType
+	console.log("Enemy type: " + enemyType);
 
 	for (var i = 0; i < moves.length; i++)
 	{
@@ -140,7 +148,7 @@ function searchMoves(moves, enemyType, effectiveness, isTeam)
 	}
 
 	// check that there were possible good moves, otherwise return false
-	if (bestMoves != {}})
+	if (bestMoves.length != 0)
 	{
 		// pick the move with the highest base power
 		for (var j = 0; j < bestMoves.length; j++)
@@ -187,3 +195,18 @@ function searchTeamMoves(teamPokes, enemyType, effectiveness)
 	}
 	return movePicked;
 }
+
+/**
+ * This is the exports object that will be imported into the client code 
+ * and used by the client to determine which move to use next
+ */
+var PoketronAlgorithm = function() {
+	this.searchMoves = searchMoves;
+	this.searchTeamMoves = searchTeamMoves;
+	this.setMove = setMove;
+	this.setHighestIndividual = setHighestIndividual;
+	this.PrioritizeSuperEffective = PrioritizeSuperEffective;
+	return this;
+};
+
+module.exports = PoketronAlgorithm();
