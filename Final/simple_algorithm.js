@@ -1,4 +1,7 @@
-var move = 0;
+var move;
+var bestIndividualMove;
+var bestTeamMove;
+var switch_ID = 0;
 
 /* An algorithm that chooses an action to take based on the supereffectiveness of the move
 *  on the enemy pokemon.
@@ -14,7 +17,10 @@ var move = 0;
 *  the rest of the team for a pokemon with normally effective moves, the bot will switch out if one is available.
 *
 *  If there are no super effective moves and no normally effective moves on the team, the bot will pick a move
-*  with the highest base power for the current field pokemon.
+*  with the highest base power for the current field pokemon. If the current field pokemon only has ineffective
+*  moves, the bot will search the team for a poke with resistant moves.
+*
+*  If all team moves are ineffective, the bot will pick a random move for the current field pokemon.
 *
 *  Currently this algorithm does not take into account:
 		- the bot's team poke weaknesses/resistances
@@ -41,6 +47,7 @@ function PriotizeSuperEffective(currPoke, teamPokes, enemyPoke)
 	var enemyType = enemyPoke.type;
 
 	var movePicked = false;
+	var isTeam = false;
 
 	// the heuristic to base decisions on
 	/* type matchups according to the type-chart:
@@ -51,7 +58,7 @@ function PriotizeSuperEffective(currPoke, teamPokes, enemyPoke)
 	*/
 	var LEVEL_EFFECTIVE = 2;
 
-	movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE);
+	movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE, isTeam);
 
 	// if bot unable to pick a supereffective move, look at the other team pokes
 	if (movePicked == false)
@@ -60,40 +67,40 @@ function PriotizeSuperEffective(currPoke, teamPokes, enemyPoke)
 		// if a supereffective move was found, switch out
 		if (movePicked == true)
 		{
-			_ourActiveMon = _ourTeam[i]
+			_ourActiveMon = _ourTeam[switch_ID]
 		}
 		else
 		{
 			// too bad, look for moves with normal effectiveness
 			LEVEL_EFFECTIVE = 0;
 
-			movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE);
+			movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE, isTeam);
 			// there were no normal moves, so look for a team poke that has one
-			// NOTE: THIS IS NOT TAKING INTO ACCOUNT TEAM POKE STATS/MOVE POWER SO THE CHOSEN POKE MAY BE A BAD CHOICE
+			// NOTE: THIS IS NOT TAKING INTO ACCOUNT TEAM POKE STATS SO THE CHOSEN POKE MAY BE A BAD CHOICE
 			if (movePicked == false)
 			{
 				movePicked = searchTeamMoves(teamPokes, enemyType, LEVEL_EFFECTIVE);
 				if (movePicked == true)
 				{
-					_ourActiveMon = _ourTeam[i];
+					_ourActiveMon = _ourTeam[switch_ID];
 				}
 				else
 				{
 					// poor bot is getting desperate. look for a move that is resistant
 					LEVEL_EFFECTIVE = 1;
 
-					movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE);
+					movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE, isTeam);
 					if (movePicked == false)
 					{
-						// search the team for a pokemon with moves that will do something
+						// search the team for a pokemon with moves that are resistant
 						movePicked = searchTeamMoves(teamPokes, enemyType, LEVEL_EFFECTIVE);
 						if (movePicked == true)
 						{
-							_ourActiveMon = _ourTeam[i];
+							_ourActiveMon = _ourTeam[switch_ID];
 						}
 						else
 						{
-							// wow, that sucks. pick a move at random
+							// wow, that sucks. pick a move at random since they're all ineffective
 							move = getRandomInt(1, _ourActiveMon.moves.length);
 						}
 					}
@@ -102,7 +109,7 @@ function PriotizeSuperEffective(currPoke, teamPokes, enemyPoke)
 		}
 	}
 
-	// bot has picked a move, so return it
+	// bot has picked a move, return it
 	return move;
 }
 
@@ -111,27 +118,72 @@ function setMove(aMove)
 	move = aMove;
 }
 
-function searchMoves(moves, enemyType, effectiveness)
+function setHighestIndividual(aMove)
+{
+	bestIndividualMove = aMove;
+}
+
+function searchMoves(moves, enemyType, effectiveness, isTeam)
 {
 	var move;
 	var movePicked = false;
+	var bestMoves = {};
+	var bestMoveForThisMon;
+
 	for (var i = 0; i < moves.length; i++)
 	{
-
+		// if this move is effective, add it to the list
 		if (enemyType.damageTaken(moves[i].type) == effectiveness)
 		{
-			setMove(moves[i]);
-			movePicked = true;
+			bestMoves.push(moves[i]);
 		}
 	}
+
+	// check that there were possible good moves, otherwise return false
+	if (bestMoves != {}})
+	{
+		// pick the move with the highest base power
+		for (var j = 0; j < bestMoves.length; j++)
+		{
+			if (bestMoveForThisMon.basePower < bestMoves[j].basePower)
+			{
+				bestMoveForThisMon = bestMoves[j];
+			}
+		}
+		if (isTeam)
+		{
+			// we're doing team comparisons
+			setHighestIndividualMove(bestMoveForThisMon);
+		}
+		else
+		{
+			// just looking for the best field poke move
+			setMove(bestMoveForThisMon);
+		}
+		movePicked = true;
+	}
+
 	return movePicked;
 }
 
 function searchTeamMoves(teamPokes, enemyType, effectiveness)
 {
+	var movePicked = false;
+	var isTeam = true;
 	for (var i = 0; i < teamPokes.length; i++)
 	{
-		var movePicked = searchMoves(teamPokes[i].moves, enemyType, effectiveness);
+		movePicked = searchMoves(teamPokes[i].moves, enemyType, effectiveness, isTeam);
+		if (bestTeamMove.basePower > bestIndividualMove.basePower)
+		{
+			// the overall team move is better, so pick that one
+			move = bestTeamMove;
+		}
+		else
+		{
+			// the last pokemon searched had a move with higher power, so pick that one
+			move = bestIndividualMove;
+			switch_ID = i;
+		}
 	}
 	return movePicked;
 }
