@@ -65,7 +65,7 @@ _client.on('chat:html', function(event) {
     var str = event.data.split('<div>')[1];
     str = str.split('</div>')[0];
     var effectiveness = str.split('<br />');
-    effectiveness[0] = effectiveness[0].split(' ')[0];
+    effectiveness[0] = effectiveness[0].split(' (')[0];
     var effectivenessJSON = new Object();
     effectivenessJSON.species = effectiveness[0];
     for(var i = 1; i < effectiveness.length; i++){
@@ -109,14 +109,23 @@ _client.on('chat:html', function(event) {
       }
     }
     
-    console.log(effectivenessJSON);
+    var intimidate = "I know all about " + effectivenessJSON.species + " and how it is weak to ";
+    
     for(var key in _theirTeam){
       if(key == effectivenessJSON.species){
         _theirTeam[key].weaknesses = effectivenessJSON.weaknesses;
         _theirTeam[key].resistances = effectivenessJSON.resistances;
         _theirTeam[key].immunities = effectivenessJSON.immunities;
+        
+        effectivenessJSON.weaknesses.forEach(function(d){
+        	intimidate += " " + d.type + ",";
+        });
       }
     }
+    _client.send(intimidate, event.room);
+    
+    _client.send(updateKnowledge(), event.room);
+
   }
 });
 
@@ -140,8 +149,8 @@ _client.on('battle:start', function(event) {
   console.log("\n+------------" + event.room);
   _ourTeam = [];
   _theirTeam = [];
-  _client.send("gl;hf!", event.room)
-  _client.send("/timer on", event.room)
+  _client.send("Prepare to be crushed by my vast knowledge!", event.room)
+  //_client.send("/timer on", event.room)
 });
 
 // Get player information, learn if we are p1 or p2 in this battle.
@@ -210,28 +219,39 @@ _client.on('battle:switch', function(event){
   else if(event.data.pokemon.includes(_theyAre)){
     console.log("They send out: " + event.data.details + " with " + event.data.hp  + "HP");
     var monName = event.data.details.split(',')[0];
+    var fullName = event.data.details.split(',')[0];
+    if(monName.includes('-'))
+    	monName = monName.substring(0, monName.indexOf('-'));
+    
     var switchedMon = new mon();
     switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
-    if(!_theirTeam.includes(switchedMon)){
+    console.log("MON: " + monName + " FULL: " + fullName);
+    if(!isKnown(monName)){
       _theirTeam[monName] = switchedMon;
        /*  Do database queries for the builds used for this species in Randoms */
       var moves = getPossibleBattleMoves(_theirTeam[monName]);
       console.log("POSSIBLE MOVES:")
       console.log(moves)
-      _client.send("/weakness " + monName, event.room)
+      _client.send("/weakness " + fullName, event.room)
       /* Make estimates about remaining data fields based on those estimates
 
         !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
     */
     }
+    else{
+    	if(_theirTeam[monName].moves.length > 0)
+    		_client.send("Oh look, it's that pathetic " + monName + " that knows " + _theirTeam[monName].moves.join(', '), event.room);
+    	else
+    		_client.send("Oh look, it's that pathetic " + monName + " that ran away before making any moves", event.room);
+    }
   }
-  console.log("\nP2 REVEALED TEAM:")
+  /*console.log("\nP2 REVEALED TEAM:")
     for(var key in _theirTeam){
       console.log(_theirTeam[key])
-  }
-  _theirActiveMon = _theirTeam[monName]
-  console.log("THEIR ACTIVE MON:")
-  console.log(_theirActiveMon);
+  }*/
+  //_theirActiveMon = _theirTeam[monName]
+  //console.log("THEIR ACTIVE MON:")
+  //console.log(_theirActiveMon);
   //console.log("Team Comp: " + JSON.stringify(event.data.side.pokemon))
 });
 
@@ -240,11 +260,17 @@ _client.on('battle:move', function(event){
   if(event.data.pokemon.includes(_theyAre)){
     console.log("Opponent used: " + event.data.move + "!");
     var user = parsePokeName(event.data.pokemon);
-    //console.log(_theirTeam[user]);
+    console.log(_theirTeam[user]);
+    console.log("User: " + user);
     /*
       we know _theirTeam[user] knows event.data.move, so we can better estimate which build it is using. 
       Re-evaluate estimates here.
     */
+    for(var key in _theirTeam){
+    	if(key == _theirTeam[user].species){
+    		_theirTeam[user].moves.push(event.data.move);
+    	}
+    }
   }
 });
 
@@ -298,6 +324,25 @@ _client.on('internal:send', function(event){
 
 
 // Helper Functions
+
+//review what we know about our opponent
+function updateKnowledge(){
+	var knowledge = "Okay, so you have ";
+	for(var key in _theirTeam){
+      knowledge += "a " + _theirTeam[key].species + ", ";
+    }
+    
+    return knowledge;
+}
+
+function isKnown(monName){
+	for(var key in _theirTeam){
+      if(_theirTeam[key].species == monName)
+      	return true;
+    }
+    
+    return false;
+}
 
 // parses 'p1a: <SPECIES>' to just '<SPECIES>' 
 function parsePokeName(name){
