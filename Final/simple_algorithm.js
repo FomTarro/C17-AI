@@ -1,4 +1,5 @@
-var move;
+var aMonMove = require('./move');
+var move = new move();
 var bestIndividualMove;
 var bestTeamMove;
 var switch_ID = 0;
@@ -88,7 +89,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 		else
 		{
 			// too bad, look for moves with normal effectiveness
-			LEVEL_EFFECTIVE = 0;
+			//LEVEL_EFFECTIVE = 0;
 
 			movePicked = searchMoves(moves, enemyWeaknesses, isTeam);
 			// there were no normal moves, so look for a team poke that has one
@@ -104,7 +105,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 				else
 				{
 					// poor bot is getting desperate. look for a move that is resistant
-					LEVEL_EFFECTIVE = 1;
+					//LEVEL_EFFECTIVE = 1;
 
 					movePicked = searchMoves(moves, enemyWeaknesses, isTeam);
 					if (movePicked == false)
