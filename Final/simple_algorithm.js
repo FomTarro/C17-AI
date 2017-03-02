@@ -1,8 +1,8 @@
 var aMonMove = require('./move');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
 var move = new aMonMove();
-var bestIndividualMove;
-var bestTeamMove;
+var bestIndividualMove = new aMonMove();
+var bestTeamMove = new aMonMove();
 var switch_ID = 0;
 var isSwitch = false;
 
@@ -14,7 +14,7 @@ function QueryMove(aMove)
 
 function getMoveType(aMove)
 {
-	console.log("RETRIEVEING MOVE TYPE");
+	console.log("RETRIEVING MOVE TYPE");
 	console.log(MoveData[aMove].type);
 	return MoveData[aMove].type;
 }
@@ -167,6 +167,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 	var movePicked = false;
 	var bestMoves = [];
 	var bestMoveForThisMon;
+	var moveType;
 
 	console.log("Moves: " + moves);
 	//BUG TODO: getting undefined for enemyType
@@ -178,12 +179,12 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 		console.log("Looking at move type: " + moves[i].type)
 		for(var j = 0; j < enemyWeaknesses.length; j++)
 		{
-			getMoveType(moves[i]);
-			QueryMove(moves[i]);
+			moveType = getMoveType(moves[i]);
+			//QueryMove(moves[i]);
 			//console.log("Looking at weakness: " + enemyWeaknesses[j]);
 			console.log("Looking at weakness type: " + enemyWeaknesses[j].type);
 			// if this move is effective, add it to the list
-			if (enemyWeaknesses[j].type.includes(moves[i].type))
+			if (enemyWeaknesses[j].type.includes(moveType))
 			{
 				bestMoves.push(moves[i]);
 			}
