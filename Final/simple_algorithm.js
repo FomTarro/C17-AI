@@ -13,16 +13,16 @@ function QueryMove(aMove)
 	return MoveData[aMove];
 }
 
-function getMovePower(aMove)
-{
-	console.log("RETRIEVING MOVE POWER");
+// function getMovePower(aMove)
+// {
+// 	console.log("RETRIEVING MOVE POWER");
 // 	if (aMove.includes("60"))
 // 	    {
 // 	    	aMove = aMove.substring(0, aMove.indexOf("60"));
 // 	    }
-	console.log(MoveData[aMove].basePower);
-	return MoveData[aMove].basePower;
-}
+// 	console.log(MoveData[aMove].basePower);
+// 	return MoveData[aMove].basePower;
+// }
 
 function getMoveType(aMove)
 {
@@ -344,17 +344,17 @@ function searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmu
 	for (var i = 0; i < teamPokes.length; i++)
 	{
 		movePicked = searchMoves(teamPokes[i].moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, effectiveness);
-		if (bestTeamMove.basePower > bestIndividualMove.basePower)
-		{
-			// the overall team move is better, so pick that one
-			move = bestTeamMove;
-		}
-		else
-		{
-			// the last pokemon searched had a move with higher power, so pick that one
-			move = bestIndividualMove;
-			switch_ID = i;
-		}
+// 		if (bestTeamMove.basePower > bestIndividualMove.basePower)
+// 		{
+// 			// the overall team move is better, so pick that one
+// 			move = bestTeamMove;
+// 		}
+// 		else
+// 		{
+// 			// the last pokemon searched had a move with higher power, so pick that one
+// 			move = bestIndividualMove;
+// 			switch_ID = i;
+// 		}
 	}
 	return movePicked;
 }
