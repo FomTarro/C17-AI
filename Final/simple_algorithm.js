@@ -6,8 +6,17 @@ var bestTeamMove;
 var switch_ID = 0;
 var isSwitch = false;
 
-function QueryMove(aMove) {
-  console.log(MoveData[aMove]);
+function QueryMove(aMove) 
+{
+	console.log("QUERY");
+	console.log(MoveData[aMove]);
+}
+
+function getMoveType(aMove)
+{
+	console.log("RETRIEVEING MOVE TYPE");
+	console.log(MoveData[aMove].type);
+	return MoveData[aMove].type;
 }
 
 function ParseMoveData(data) {
@@ -169,6 +178,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 		console.log("Looking at move type: " + moves[i].type)
 		for(var j = 0; j < enemyWeaknesses.length; j++)
 		{
+			getMoveType(moves[i]);
 			QueryMove(moves[i]);
 			//console.log("Looking at weakness: " + enemyWeaknesses[j]);
 			console.log("Looking at weakness type: " + enemyWeaknesses[j].type);
