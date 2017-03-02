@@ -13,6 +13,17 @@ function QueryMove(aMove)
 	return MoveData[aMove];
 }
 
+function getMovePower(aMove)
+{
+	console.log("RETRIEVING MOVE POWER");
+	if (aMove.includes("60"))
+	    {
+	    	aMove = aMove.substring(0, aMove.indexOf("60"));
+	    }
+	console.log(MoveData[aMove].basePower);
+	return MoveData[aMove].basePower;
+}
+
 function getMoveType(aMove)
 {
 	console.log("RETRIEVING MOVE TYPE");
@@ -188,6 +199,8 @@ function setHighestIndividual(aMove)
 function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 {
 	var movePicked = false;
+	var thisMoveBasePower = 0;
+	var bestMoveBasePower = getMovePower(bestMoveForThisMon);
 	console.log("BEST MOVES: "+ bestMoves);
 	// check that there were possible good moves, otherwise return false
 	if (bestMoves.length > 0)
@@ -197,7 +210,8 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 		{
 			console.log("This move's base power:");
 			console.log(bestMoves[j].basePower);
-			if (bestMoveForThisMon.basePower < bestMoves[j].basePower)
+			thisMoveBasePower = getMovePower(bestMoves[j]);
+			if (bestMoveBasePower < thisMoveBasePower)
 			{
 				bestMoveForThisMon = bestMoves[j];
 			}
