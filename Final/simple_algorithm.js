@@ -266,7 +266,7 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 
 	console.log("Moves: " + moves);
 	//BUG TODO: getting undefined for enemyType
-	console.log("Enemy weaknesses: " + enemyWeaknesses);
+	console.log("Enemy weaknesses: " + JSON.stringify(enemyWeaknesses));
 
 	if (effectiveness == 2)
 	{
