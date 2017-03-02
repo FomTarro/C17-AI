@@ -1,6 +1,8 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
 var _client = new PokeClient();
+// the move that is picked to perform for this mon
+var myMonMove = require('./move');
 
 var Credentials = require("./credentials");
 var _creds = new Credentials();
@@ -199,21 +201,26 @@ _client.on('battle:request', function(event){
     }while(_ourTeam[switchChoice].condition.includes('fnt'))
   }
   else{
-    // pick a random move from our move list
-    var move = 1;
-    // if we're holding a choice item, and we have already done a move
-    if(_ourActiveMon.item.toLowerCase().includes("choice") && _ourLastMove != -1){
-      // we need to keep using that move
-      move = _ourLastMove;
-    }
-    else{
-      move = getRandomInt(1, _ourActiveMon.moves.length); 
-    }
-    _ourLastMove = move;
-    response = '/choose move ' + move + '|' + _reqNum;
-  }
+   // pick a random move from our move list **OLD CODE**
+    //var move = getRandomInt(1, _ourActiveMon.moves.length); 
 
-  _client.send(response, event.room)
+    //Run algorithm and Make an educated guess on what move to use next
+    //PriotizeSuperEffective(currPoke, teamPokes, enemyPoke)
+    // Set up a check every 500ms because we are still waiting for additional info to
+    // come in via separate commands.
+    var waitForSwitch = setInterval(function() {
+      //Once the flags are all set, we run the algo
+      if(_theirActiveMon != undefined && _weaknessFound) {
+        var move = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon);
+        console.log(move);
+        response = '/choose move ' + move + '|' + _reqNum;
+        _client.send(response, event.room);
+        //Reset flags and clear interval
+        _weaknessFound = false;
+        clearInterval(waitForSwitch);
+      }
+    }, 500);
+  }
 });
 
 // A switch has happened, either through deliberate switch or drag-out.
