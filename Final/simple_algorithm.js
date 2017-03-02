@@ -203,8 +203,8 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 	//var bestMoveBasePower = getMovePower(bestMoveForThisMon);
 	console.log("BEST MOVES: "+ bestMoves);
 	// check that there were possible good moves, otherwise return false
-// 	if (bestMoves.length > 0)
-// 	{
+ 	if (bestMoves.length > 0)
+ 	{
 		// pick the move with the highest base power
 		// TODO: Add the algorithm to measure tradeoff of power vs accuracy
 // 		for (var j = 0; j < bestMoves.length; j++)
@@ -232,7 +232,7 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 			setMove(bestMoveForThisMon);
 		}
 		movePicked = true;
-//	}
+	}
 	return movePicked;
 }
 
