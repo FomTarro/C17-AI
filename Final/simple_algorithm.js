@@ -1,5 +1,5 @@
 var aMonMove = require('./move');
-var move = new move();
+var move = new aMonMove();
 var bestIndividualMove;
 var bestTeamMove;
 var switch_ID = 0;
