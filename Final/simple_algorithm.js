@@ -70,6 +70,7 @@ function getIsSwitch()
 function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 {
 
+	var moveID = 0;
 	console.log(enemyPoke);	
 
 	// 4 moves the current bot pokemon can use
@@ -154,7 +155,8 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 						{
 							console.log("Sucks to be you. Pick randomly!");
 							// wow, that sucks. pick a move at random since they're all ineffective
-							move = getRandomInt(1, currPoke.moves.length);
+							moveID = getRandomInt(1, currPoke.moves.length);
+							move = moves[moveID]
 						}
 					}
 				}
