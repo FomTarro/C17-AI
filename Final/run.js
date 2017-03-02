@@ -177,6 +177,9 @@ _client.on('battle:rule', function(event){
 
 // A request is being made of us. We must decide how to respond.
 _client.on('battle:request', function(event){
+  //console.log(JSON.stringify(event));
+  //console.log(JSON.stringify(event.data.active));; 
+ 
   setTimeout(makeDecision, 1000, event);
   
   function makeDecision(event){
@@ -204,22 +207,19 @@ _client.on('battle:request', function(event){
       // pick a team member at random until we select one that has not fainted
       do{
         var switchChoice = getRandomInt(0, 5);
-        response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
       }while(_ourTeam[switchChoice].condition.includes('fnt'))
+      response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
     }
     else{
-      var move = 1;
-      // if we're holding a choice item, and we have already done a move
-      if(_ourActiveMon.item.toLowerCase().includes("choice") && _ourLastMove != -1){
-        // we need to keep using that move
-        move = _ourLastMove;
-      }
-      else{
+      // gives us a list of possible moves for out currently active mon
+      // this is important 
+      var possibleMoves = event.data.active[0].moves
+      do{
         // otherwise, pick a random move from our move list
-        move = getRandomInt(1, _ourActiveMon.moves.length); 
-      }
-      _ourLastMove = move;
+        var move = getRandomInt(1, possibleMoves.length); 
+      }while(possibleMoves[move-1].disabled == true || possibleMoves[move-1].pp < 0)
       response = '/choose move ' + move + '|' + _reqNum;
+      _ourLastMove = move;
     }
 
     _client.send(response, event.room)
