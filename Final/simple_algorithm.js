@@ -154,6 +154,8 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 		}
 	}
 
+	console.log("I'm returning the move I picked");
+	console.log(move.name);
 	// bot has picked a move, return it
 	return move;
 }
