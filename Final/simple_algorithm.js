@@ -151,14 +151,17 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 
 	console.log("Moves: " + moves);
 	//BUG TODO: getting undefined for enemyType
-	console.log("Enemy type: " + enemyWeaknesses);
+	console.log("Enemy weaknesses: " + enemyWeaknesses);
 
 	for (var i = 0; i < moves.length; i++)
 	{
-		// if this move is effective, add it to the list
-		if (enemyWeaknesses.type.includes(moves[i].type))
+		for(int j = 0; j < enemyWeaknesses.length; j++)
 		{
-			bestMoves.push(moves[i]);
+			// if this move is effective, add it to the list
+			if (enemyWeaknesses[j].type.includes(moves[i].type))
+			{
+				bestMoves.push(moves[i]);
+			}
 		}
 	}
 
