@@ -1,9 +1,18 @@
 var aMonMove = require('./move');
+var MoveData = require('./PokeClient/moves').BattleMovedex;
 var move = new aMonMove();
 var bestIndividualMove;
 var bestTeamMove;
 var switch_ID = 0;
 var isSwitch = false;
+
+function QueryMove(aMove) {
+  console.log(MoveData[aMove]);
+}
+
+function ParseMoveData(data) {
+
+}
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -160,6 +169,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 		console.log("Looking at move type: " + moves[i].type)
 		for(var j = 0; j < enemyWeaknesses.length; j++)
 		{
+			QueryMove(moves[i]);
 			//console.log("Looking at weakness: " + enemyWeaknesses[j]);
 			console.log("Looking at weakness type: " + enemyWeaknesses[j].type);
 			// if this move is effective, add it to the list
