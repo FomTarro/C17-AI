@@ -44,6 +44,15 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 	var exa = -1;
 	var str = -1;
 	
+	var hum_val = -1;
+	var tem_val = -1;
+	var da_val = -1;
+	var ice_val = -1;
+	var sno_val = -1;
+	var clo_val = -1;
+	var exa_val = -1;
+	var str_val = -1;
+	
 	var samples = 0;
 	var accepted = 0;
 	
@@ -53,97 +62,194 @@ function RejectionSampling(queryNode, observedNodes, network, iterations) {
 		rand = Math.random();
 		reject = false;
 		
+		hum = -1;
+		tem = -1;
+		da = -1;
+		ice = -1;
+		sno = -1;
+		clo = -1;
+		exa = -1;
+		str = -1;
+		
+		hum_val = -1;
+		tem_val = -1;
+		da_val = -1;
+		ice_val = -1;
+		sno_val = -1;
+		clo_val = -1;
+		exa_val = -1;
+		str_val = -1;
+		
 		//collect the samples, this is the probability of all the observed nodes separated by logical ands
-		//first we need to determine the values of observed nodes and store them
-		//this finds the values for the top nodes
-		for(var j = 0; j < observedNodes.length; j++){
-			reject = false;
+		
+		//next we simulate the values of the top nodes we do not know
+		for(var i = 0; i < 3; i++){     
+			if (i == 0 && hum == -1)
+				hum = network.topNodes[i].CPT.SimulateValue(Math.random());
+			else if (i == 1 && tem == -1)
+				tem = network.topNodes[i].CPT.SimulateValue(Math.random());
+			else if (i == 2 && da == -1)
+				da = network.topNodes[i].CPT.SimulateValue(Math.random());
+	    }
+	    
+	    hum_val = network.topNodes[0].CPT.QueryValue(hum);
+	    tem_val = network.topNodes[1].CPT.QueryValue(tem);
+	    da_val = network.topNodes[2].CPT.QueryValue(da);
+		
+		//now we need to simulate the unknown icy or snow nodes		
+		for (var i = 0; i < 2; i++) {
+			if (i == 0 && ice == -1)
+				ice = network.topNodes[0].children[i].CPT.SimulateValue(Math.random(), hum_val, tem_val);
+			else if (i == 1 && sno == -1)
+				sno = network.topNodes[0].children[i].CPT.SimulateValue(Math.random(), hum_val, tem_val);
+		}
+		
+		ice_val = network.topNodes[0].children[0].CPT.QueryValue(ice, hum_val, tem_val);
+		sno_val = network.topNodes[0].children[1].CPT.QueryValue(sno, hum_val, tem_val);
+		
+		//now we need to simulate the unknown cloudy or exam nodes		
+		for (var i = 0; i < 3; i++) {
+			if (i == 0 && clo == -1)
+				clo = network.topNodes[0].children[1].children[i].CPT.SimulateValue(Math.random(), sno);
+			else if (i == 2 && exa == -1)
+				exa = network.topNodes[0].children[1].children[i].CPT.SimulateValue(Math.random(), sno, da_val);
+		}
+		
+		clo_val = network.topNodes[0].children[1].children[0].CPT.QueryValue(clo, sno);
+		exa_val = network.topNodes[0].children[1].children[2].CPT.QueryValue(clo, sno, da_val);
+		
+		//now we need to simulate the unknown stressed	
+		if (str == -1)
+			str = network.topNodes[0].children[1].children[1].CPT.SimulateValue(Math.random(), sno, exa);
 			
-			//find the value for top level nodes
-			for(var i = 0; i < 3; i++){
-	            if(network.topNodes[i].name.toLowerCase() == observedNodes[j].node){
-					if (i == 0)
-						hum = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
-					else if (i == 1)
-						tem = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
-					else if (i == 1)
-						da = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
-					
-					//set this just so we dont go into all the other for loops since we found the value
-					reject = true;
-	            }
-	        }
-		}
+		str_val = network.topNodes[0].children[1].children[1].CPT.QueryValue(clo, sno, exa);
 		
-		
-
-		/*for(var i = 0; i < 3 && !reject; i++){
-			//console.log(network.topNodes[i].name.toLowerCase() + == queryNode.node)
-			if(network.topNodes[i].name.toLowerCase() == queryNode.node){
-				if(rand >= network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase())){
-					reject = true;
-				}
-				else{
-					if(i == 0)
-						hum = network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase());
-					else if(i == 1)
-						tem = network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase());
-					else if(i == 1)
-						da = network.topNodes[i].CPT.QueryValue(queryNode.value.toLowerCase());
-					
-					samples++;
-				}
-			}
-		}
-		rand = Math.random();
-		for(var i = 0; i < 2 && !reject; i++){
-			if(network.topNodes[0].children[i].name.toLowerCase() == queryNode.node){
-				if(rand >= network.topNodes[0].children[i].CPT.QueryValue(queryNode.value.toLowerCase(), hum, tem)){
-					//console.log("reject query");
-					reject = true;
-				}
-				else{
-					samples++;
-				}
-			}
-		}
-		
+		//all values simulated
 		for(var j = 0; j < observedNodes.length && !reject; j++){
-	        rand = Math.random();
-	        for(var i = 0; i < 3 && !reject; i++){
-	            if(network.topNodes[i].name.toLowerCase() == observedNodes[j].node){
-	                if(rand >= network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase())){
-	                    reject = true;
-	                }
-	                else{
-						if(i == 0)
-							hum = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
-						else if(i == 1)
-							tem = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
-						else if(i == 1)
-							da = network.topNodes[i].CPT.QueryValue(observedNodes[j].value.toLowerCase());
-						accepted++;
-					}
-	            }
-	        }
-	        rand = Math.random();
-			for(var i = 0; i < 2 && !reject; i++){
-				if(network.topNodes[0].children[i].name.toLowerCase() == observedNodes[j].node){
-					if(rand >= network.topNodes[0].children[i].CPT.QueryValue(observedNodes[j].value.toLowerCase(), hum, tem)){
-						//console.log("reject query: " + rand +"stuff: " + network.topNodes[0].children[i].CPT.QueryValue(observedNodes[j].value.toLowerCase(), hum, tem));
-						reject = true;
-					}
-					else{
-						accepted++;
-					}
-				}
+			if(observedNodes[j].node.toLowerCase() == "humidity"){
+				if(observedNodes[j].value.toLowerCase() == hum)
+					samples += 0;
+				else
+					reject = true;
 			}
-	    }*/
+			else if(observedNodes[j].node.toLowerCase() == "temperature"){
+				if(observedNodes[j].value.toLowerCase() == tem)
+					samples += 0;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "day"){
+				if(observedNodes[j].value.toLowerCase() == da)
+					samples += 0;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "icy"){
+				if(observedNodes[j].value.toLowerCase() == ice)
+					samples += 0;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "snow"){
+				if(observedNodes[j].value.toLowerCase() == sno)
+					samples += 0;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "cloudy"){
+				if(observedNodes[j].value.toLowerCase() == clo)
+					samples += 0;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "exams"){
+				if(observedNodes[j].value.toLowerCase() == exa)
+					samples += 0;
+				else
+					reject = true;
+			}
+			else if(observedNodes[j].node.toLowerCase() == "stress"){
+				if(observedNodes[j].value.toLowerCase() == str)
+					samples += 0;
+				else
+					reject = true;
+			}
+		}
+		
+		//if the sample has not been rejected
+		if(!reject){
+			samples++;
+			if(queryNode.node.toLowerCase() == "humidity"){
+				if(queryNode.value.toLowerCase() == hum)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "temperature"){
+				if(queryNode.value.toLowerCase() == ice)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "day"){
+				if(queryNode.value.toLowerCase() == da)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "icy"){
+				if(queryNode.value.toLowerCase() == ice)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "snow"){
+				if(queryNode.value.toLowerCase() == sno)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "cloudy"){
+				if(queryNode.value.toLowerCase() == clo)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "exams"){
+				if(queryNode.value.toLowerCase() == exa)
+					accepted++;
+			}
+			else if(queryNode.node.toLowerCase() == "stress"){
+				if(queryNode.value.toLowerCase() == str)
+					accepted++;
+			}
+		}
 	}
 	
-	console.log("Samples: " + samples);	
-	console.log("Accepted Samples: " + accepted);
-	console.log("Probability: " + ((accepted/samples)/(samples/iterations)));
+	/*console.log("Humidity: " + hum + " = " + hum_val);
+	console.log("Temperature: " + tem + " = " + tem_val);
+	console.log("Day: " + da + " = " + da_val);
+	console.log("Icy: " + ice + " = " + ice_val);
+	console.log("Snow: " + sno + " = " + sno_val);
+	console.log("Exam: " + exa + " = " + exa_val);
+	console.log("Cloudy: " + clo + " = " + clo_val);
+	console.log("Stress: " + str + " = " + str_val);*/
+	
+	console.log("Completed Samples: " + samples);	
+	console.log("Non-Rejected Samples: " + accepted);
+	
+	if(observedNodes.length == 0)
+		samples = iterations;
+		
+	console.log("Probability: " + ((accepted/samples)));
+		
+	console.log("Standard Deviation: " + stdDev(accepted/samples));
+	console.log("ConfidenceInterval[Lower Range: " + confidenceInterval(accepted/samples, stdDev(accepted/samples), samples)[0] + ", Upper Range: " + confidenceInterval(accepted/samples, stdDev(accepted/samples), samples)[1] + "]");
+}
+
+function stdDev(prob_query)
+{
+	var stdDev = Math.sqrt(prob_query * (1 - prob_query));
+	return stdDev;
+}
+
+function confidenceInterval(prob_query, stdDev, numSamples)
+{
+	var lowerRange = prob_query - 2 * (stdDev / Math.sqrt(numSamples));
+	var upperRange = prob_query + 2 * (stdDev / Math.sqrt(numSamples));
+	var interval = [];
+
+	interval.push(lowerRange);
+	interval.push(upperRange);
+	return interval;
 }
 
 /**
@@ -386,7 +492,7 @@ var CPT = {
     Snow: {
 		SimulateValue: function(value, h, t) {
 			if(h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) {
-				if (value >= 0 && value < 0.00001) return "true";
+				if (value >= 0 && value < 0.0001) return "true";
 				if (value >= 0.00001 && value <= 1) return "false";
 			}
 			if(h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) {
@@ -398,7 +504,7 @@ var CPT = {
 				if (value >= 0.1 && value <= 1) return "false";
 			}
 			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) {
-				if (value >= 0 && value < 0.00001) return "true";
+				if (value >= 0 && value < 0.0001) return "true";
 				if (value >= 0.00001 && value <= 1) return "false";
 			}
 			if(h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) {
@@ -435,10 +541,10 @@ var CPT = {
 		            if (h == CPT.Humidity.MEDIUM) return 0.25011;
 		            if (h == CPT.Humidity.HIGH) return 0.4011;
 	        	}
-				if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 0.00001;
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 0.0001;
 				if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 0.001;
 				if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 0.01;
-				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 0.00001;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 0.0001;
 				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 0.0001;
 				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 0.25;
 				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 0.0001;
@@ -456,10 +562,10 @@ var CPT = {
 		            if (h == CPT.Humidity.MEDIUM) return 2.74989;
 		            if (h == CPT.Humidity.HIGH) return 2.5989;
 	        	}
-				if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 1 - 0.00001;
+				if (h == CPT.Humidity.LOW && t == CPT.Temperature.WARM) return 1 - 0.0001;
 				if (h == CPT.Humidity.LOW && t == CPT.Temperature.MILD) return 1 - 0.001;
 				if (h == CPT.Humidity.LOW && t == CPT.Temperature.COLD) return 1 - 0.01;
-				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 1 - 0.00001;
+				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.WARM) return 1 - 0.0001;
 				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.MILD) return 1 - 0.0001;
 				if (h == CPT.Humidity.MEDIUM && t == CPT.Temperature.COLD) return 1 - 0.25;
 				if (h == CPT.Humidity.HIGH && t == CPT.Temperature.WARM) return 1 - 0.0001;
@@ -500,10 +606,10 @@ var CPT = {
 					if(isSnow == "true") return 0.3001;
 					if(isSnow == "false") return 0.101;
 				}
-				if (!isSnow && day == CPT.Day.WEEKEND) return 0.001;
-				if (!isSnow && day == CPT.Day.WEEKDAY) return 0.01;
-				if (isSnow && day == CPT.Day.WEEKEND) return 0.0001;
-				if (isSnow && day == CPT.Day.WEEKDAY) return 0.3;
+				if (isSnow == "false" && day == CPT.Day.WEEKEND) return 0.001;
+				if (isSnow == "false" && day == CPT.Day.WEEKDAY) return 0.01;
+				if (isSnow == "true" && day == CPT.Day.WEEKEND) return 0.0001;
+				if (isSnow == "true" && day == CPT.Day.WEEKDAY) return 0.3;
 			} else {
 				if(isSnow + day == -2) return 3.5989;
 				if(isSnow == -1) {
@@ -514,10 +620,10 @@ var CPT = {
 					if(isSnow == "true") return 1.6999;
 					if(isSnow == "false") return 1.899;
 				}
-				if (!isSnow && day == CPT.Day.WEEKEND) return 1 - 0.001;
-				if (!isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.01;
-				if (isSnow && day == CPT.Day.WEEKEND) return 1 - 0.0001;
-				if (isSnow && day == CPT.Day.WEEKDAY) return 1 - 0.3;
+				if (isSnow == "false" && day == CPT.Day.WEEKEND) return 1 - 0.001;
+				if (isSnow == "false" && day == CPT.Day.WEEKDAY) return 1 - 0.01;
+				if (isSnow == "true" && day == CPT.Day.WEEKEND) return 1 - 0.0001;
+				if (isSnow == "true" && day == CPT.Day.WEEKDAY) return 1 - 0.3;
 			}
 		}
 	},
@@ -554,10 +660,10 @@ var CPT = {
 					if(isSnow == "true") return 0.6;
 					if(isSnow == "false") return 0.21;
 				}
-				if(!isSnow && !isExams) return 0.01;
-				if(!isSnow && isExams) return 0.2;
-				if(isSnow && !isExams) return 0.1;
-				if(isSnow && isExams) return 0.5;
+				if(isSnow == "false" && isExams == "false") return 0.01;
+				if(isSnow == "false" && isExams == "true") return 0.2;
+				if(isSnow == "true" && isExams == "false") return 0.1;
+				if(isSnow == "true" && isExams == "true") return 0.5;
 			} else {
 				if(isSnow + isExams == -1) return 3.19;
 				if(isSnow == -1) {
@@ -568,10 +674,10 @@ var CPT = {
 					if(isSnow == "true") return 1.4;
 					if(isSnow == "false") return 1.79;
 				}
-				if(!isSnow && !isExams) return 1 - 0.01;
-				if(!isSnow && isExams) return 1 - 0.2;
-				if(isSnow && !isExams) return 1 - 0.1;
-				if(isSnow && isExams) return 1 - 0.5;
+				if(isSnow == "false" && isExams == "false") return 1 - 0.01;
+				if(isSnow == "false" && isExams == "true") return 1 - 0.2;
+				if(isSnow == "true" && isExams == "false") return 1 - 0.1;
+				if(isSnow == "true" && isExams == "true") return 1 - 0.5;
 			}
 		}
 	}

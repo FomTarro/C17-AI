@@ -1,0 +1,41 @@
+sample stress=high 100
+sample stress=high 100 humidity=medium temperature=cold icy=false snow=true cloudy=true exams=true day=weekday
+sample stress=high 100 temperature=cold snow=false
+sample stress=high 100 day=weekday icy=true cloudy=true
+<<<<<<< HEAD
+sample stress=high 100 humidity=low snow=true exams=false icy=false
+
+sample stress=high 100 humidity=low snow=true exams=false icy=false
+
+Completed Samples: 0
+Non-Rejected Samples: 0
+Probability: NaN
+Standard Deviation: NaN
+ConfidenceInterval[Lower Range: NaN, Upper Range: NaN]
+
+Completed Samples: 3
+Non-Rejected Samples: 1
+Probability: 0.3333333333333333
+Standard Deviation: 0.4714045207910317
+ConfidenceInterval[Lower Range: -0.21099772061848404, Upper Range: 0.8776643872851506]
+
+Completed Samples: 17
+Non-Rejected Samples: 1
+Probability: 0.058823529411764705
+Standard Deviation: 0.23529411764705882
+ConfidenceInterval[Lower Range: -0.05531088237003905, Upper Range: 0.17295794119356844]
+
+Completed Samples: 109
+Non-Rejected Samples: 9
+Probability: 0.08256880733944955
+Standard Deviation: 0.27522935779816515
+ConfidenceInterval[Lower Range: 0.029844424666725614, Upper Range: 0.1352931900121735]
+
+Completed Samples: 930
+Non-Rejected Samples: 109
+Probability: 0.11720430107526882
+Standard Deviation: 0.32166357096308956
+ConfidenceInterval[Lower Range: 0.09610877304845691, Upper Range: 0.13829982910208072]
+=======
+sample stress=high 100 humidity=low snow=true exams=false icy=false
+>>>>>>> 506e0206b1f0563ceda8013f1fc4ca719d754fd0
