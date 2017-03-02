@@ -200,7 +200,7 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 {
 	var movePicked = false;
 	var thisMoveBasePower = 0;
-	var bestMoveBasePower = getMovePower(bestMoveForThisMon);
+	//var bestMoveBasePower = getMovePower(bestMoveForThisMon);
 	console.log("BEST MOVES: "+ bestMoves);
 	// check that there were possible good moves, otherwise return false
 	if (bestMoves.length > 0)
