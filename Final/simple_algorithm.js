@@ -192,7 +192,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 	}
 	console.log("BEST MOVES: "+ bestMoves);
 	// check that there were possible good moves, otherwise return false
-	if (bestMoves.length != 0)
+	if (bestMoves.length > 0)
 	{
 		// pick the move with the highest base power
 		for (var j = 0; j < bestMoves.length; j++)
