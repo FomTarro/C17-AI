@@ -155,7 +155,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 
 	for (var i = 0; i < moves.length; i++)
 	{
-		for(int j = 0; j < enemyWeaknesses.length; j++)
+		for(var j = 0; j < enemyWeaknesses.length; j++)
 		{
 			// if this move is effective, add it to the list
 			if (enemyWeaknesses[j].type.includes(moves[i].type))
