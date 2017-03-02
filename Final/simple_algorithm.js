@@ -119,7 +119,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 	{
 		console.log("This pokemon has no supereffective moves.");
 		console.log("Looking for a supereffective move in the team...");
-		movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
+		//movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
 		// if a supereffective move was found, switch out
 		if (movePicked == true)
 		{
@@ -140,7 +140,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 			{
 				console.log("This pokemon has no effective moves.");
 				console.log("Looking for an effective move in the team...");
-				movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
+				//movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
 				if (movePicked == true)
 				{
 					isSwitch = true;
@@ -159,7 +159,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 						console.log("Looking for a resistant move in the team...");
 						isSwitch = true;
 						// search the team for a pokemon with moves that are resistant
-						movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
+						//movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
 						if (movePicked == true)
 						{
 							isSwitch = true;
