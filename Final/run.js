@@ -1,11 +1,8 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
-var _client = new PokeClient();
-// the move that is picked to perform for this mon
-var myMonMove = require('./move');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
 var Algorithm = require('./simple_algorithm');
-
+var _client = new PokeClient();
 var Credentials = require("./credentials");
 var _creds = new Credentials();
 
@@ -20,21 +17,18 @@ var _theirTeam =[];
 
 // rules to consider (in general, only one enemy at a time can be under "sleep" status)
 var _rules = [];
-
-// the number of the request being asked of us. This is effectively turn number, but not necessarily the case.
 var _reqNum = 0;
 
 // who we have out
 var _ourActiveMon;
-var _ourLastMove = -1;
-
-
 var _theirActiveMon;
 
 // variables for which player in the room is who
 var _weAre = '';
 var _theyAre = ''; 
 
+//Bool Flags So we can wait
+var _weaknessFound = false;
 
 _client.connect();
 
@@ -64,6 +58,7 @@ _client.on('chat:private', function(event){
 
 // A message has been recieved in a room you are in
 _client.on('chat:public', function(event) {
+  console.log(event.data);
 });
 
 // A chat command has given us back information in HTML format. Joy!
@@ -74,7 +69,7 @@ _client.on('chat:html', function(event) {
     var str = event.data.split('<div>')[1];
     str = str.split('</div>')[0];
     var effectiveness = str.split('<br />');
-    effectiveness[0] = effectiveness[0].split(' (')[0];
+    effectiveness[0] = effectiveness[0].split(' ')[0];
     var effectivenessJSON = new Object();
     effectivenessJSON.species = effectiveness[0];
     for(var i = 1; i < effectiveness.length; i++){
@@ -117,23 +112,16 @@ _client.on('chat:html', function(event) {
         }
       }
     }
-    var intimidate = "I know all about " + effectivenessJSON.species + " and how it is weak to ";
     
+    console.log(effectivenessJSON);
     for(var key in _theirTeam){
-      if(effectivenessJSON.species.toLowerCase().includes(key.toLowerCase())){
+      if(key == effectivenessJSON.species){
         _theirTeam[key].weaknesses = effectivenessJSON.weaknesses;
         _theirTeam[key].resistances = effectivenessJSON.resistances;
         _theirTeam[key].immunities = effectivenessJSON.immunities;
-        
-        effectivenessJSON.weaknesses.forEach(function(d){
-        	intimidate += " " + d.type + ",";
-        });
       }
     }
-    _client.send(intimidate, event.room);
-    
-    _client.send(updateKnowledge(), event.room);
-
+    _weaknessFound = true;
   }
 });
 
@@ -157,8 +145,8 @@ _client.on('battle:start', function(event) {
   console.log("\n+------------" + event.room);
   _ourTeam = [];
   _theirTeam = [];
-  _client.send("Prepare to be crushed by my vast knowledge!", event.room)
-  //_client.send("/timer on", event.room)
+  _client.send("gl;hf!", event.room)
+  _client.send("/timer on", event.room)
 });
 
 // Get player information, learn if we are p1 or p2 in this battle.
@@ -181,12 +169,13 @@ _client.on('battle:rule', function(event){
 
 // A request is being made of us. We must decide how to respond.
 _client.on('battle:request', function(event){
-  //console.log(JSON.stringify(event.data));
+  console.log(event);
+  console.log(JSON.stringify(event.data));
   _reqNum = event.data.rqid;
-  console.log("OUR TEAM:")
+  //console.log("OUR TEAM:")
   for(var i = 0; i < event.data.side.pokemon.length; i++){
     _ourTeam[i] = event.data.side.pokemon[i];
-    console.log(JSON.stringify(_ourTeam[i]));
+    //console.log(JSON.stringify(_ourTeam[i]));
   }
   // if we have never done a switch, set out active guy to our lead
   if(_ourActiveMon == undefined)
@@ -201,9 +190,10 @@ _client.on('battle:request', function(event){
       var switchChoice = getRandomInt(0, 5);
       response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
     }while(_ourTeam[switchChoice].condition.includes('fnt'))
+    _client.send(response, event.room)
   }
   else{
-   // pick a random move from our move list **OLD CODE**
+    // pick a random move from our move list **OLD CODE**
     //var move = getRandomInt(1, _ourActiveMon.moves.length); 
 
     //Run algorithm and Make an educated guess on what move to use next
@@ -227,11 +217,8 @@ _client.on('battle:request', function(event){
 
 // A switch has happened, either through deliberate switch or drag-out.
 _client.on('battle:switch', function(event){
-
   //console.log(JSON.stringify(event.data));
   if(event.data.pokemon.includes(_weAre)){
-    // reset our last move tracker
-    _ourLastMove = -1;
     console.log("We send out: " + event.data.details + " with " + event.data.hp + "HP");
     // cycle through list to find which of our guys is active
     for(var i = 0; i < _ourTeam.length; i++){
@@ -244,36 +231,28 @@ _client.on('battle:switch', function(event){
   else if(event.data.pokemon.includes(_theyAre)){
     console.log("They send out: " + event.data.details + " with " + event.data.hp  + "HP");
     var monName = event.data.details.split(',')[0];
-    var fullName = event.data.details.split(',')[0];
-    if(monName.includes('-'))
-    	monName = monName.substring(0, monName.indexOf('-'));
-    
     var switchedMon = new mon();
     switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
-    console.log("MON: " + monName + " FULL: " + fullName);
-    if(!isKnown(monName)){
+    if(!_theirTeam.includes(switchedMon)){
       _theirTeam[monName] = switchedMon;
-       /*  Do database queries for the builds used for this species in Randoms */ 
-      var moves = getPossibleBattleMoves(fullName);
+       /*  Do database queries for the builds used for this species in Randoms */
+      var moves = getPossibleBattleMoves(_theirTeam[monName]);
       console.log("POSSIBLE MOVES:")
       console.log(moves)
-      _client.send("/weakness " + fullName, event.room)
+      _client.send("/weakness " + monName, event.room)
       /* Make estimates about remaining data fields based on those estimates
 
         !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
     */
     }
-    else{
-    	if(_theirTeam[monName].moves.length > 0)
-    		_client.send("Oh look, it's that pathetic " + monName + " that knows " + _theirTeam[monName].moves.join(', '), event.room);
-    	else
-    		_client.send("Oh look, it's that pathetic " + monName + " that ran away before making any moves", event.room);
-    }
   }
-  /*console.log("\nP2 REVEALED TEAM:")
+  console.log("\nP2 REVEALED TEAM:")
     for(var key in _theirTeam){
       console.log(_theirTeam[key])
-  }*/
+  }
+  _theirActiveMon = _theirTeam[monName]
+  console.log("THEIR ACTIVE MON:")
+  console.log(_theirActiveMon);
   //console.log("Team Comp: " + JSON.stringify(event.data.side.pokemon))
 });
 
@@ -282,17 +261,11 @@ _client.on('battle:move', function(event){
   if(event.data.pokemon.includes(_theyAre)){
     console.log("Opponent used: " + event.data.move + "!");
     var user = parsePokeName(event.data.pokemon);
-    console.log(_theirTeam[user]);
-    console.log("User: " + user);
+    //console.log(_theirTeam[user]);
     /*
       we know _theirTeam[user] knows event.data.move, so we can better estimate which build it is using. 
       Re-evaluate estimates here.
     */
-    for(var key in _theirTeam){
-    	if(key == _theirTeam[user].species && !_theirTeam[user].moves.includes(event.data.move)){
-    		_theirTeam[user].moves.push(event.data.move);
-    	}
-    }
   }
 });
 
@@ -341,29 +314,11 @@ _client.on('battle:win', function(event){
 
 // Print what we're sending
 _client.on('internal:send', function(event){
-	console.log(event);
+  //console.log(event);
 });
 
 
 // Helper Functions
-
-//review what we know about our opponent
-function updateKnowledge(){
-	var knowledge = "Okay, so you have ";
-	for(var key in _theirTeam){
-      knowledge += "a " + _theirTeam[key].species + ", ";
-    }  
-  return knowledge;
-}
-
-function isKnown(monName){
-	for(var key in _theirTeam){
-      if(_theirTeam[key].species == monName)
-      	return true;
-    }
-    
-    return false;
-}
 
 // parses 'p1a: <SPECIES>' to just '<SPECIES>' 
 function parsePokeName(name){
@@ -377,19 +332,18 @@ function getRandomInt(min, max) {
 
 //AI Functions
 
-function getPossibleBattleMoves(pokemon) {
-  var species = pokemon.toLowerCase();
-  var speciesSplit = '';
-  if(species.includes('-')){
-    	species = species.split('-');
-  }
-  else if(species.includes(' '))
-    	species = species.split(' ');
+function QueryMove(move) {
+  console.log(MoveData[move]);
+}
 
-  for(var i = 0; i < species.length; i++){
-    speciesSplit = speciesSplit + species[i];
-  }
-  species = speciesSplit;
+function ParseMoveData(data) {
+
+}
+
+function getPossibleBattleMoves(pokemon) {
+  var species = pokemon.species.toLowerCase();
+  // need to de-hyphenate the name for lookup 
+  // need to compress spaces out of mon name, apparently 
   console.log(species)
   if(BattleFormatsData.BattleFormatsData[species] !== undefined 
      && BattleFormatsData.BattleFormatsData[species].randomBattleMoves !== undefined) {
