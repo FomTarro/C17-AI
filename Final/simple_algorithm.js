@@ -221,7 +221,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 				bestMoveForThisMon = bestMoves[j];
 			}
 		}
-		console.log("Best move for this pokemon: " + bestMoveForThisMon);
+		console.log("Best move for this pokemon: " + JSON.stringify(bestMoveForThisMon));
 		if (isTeam)
 		{
 			console.log("This is a team search");
