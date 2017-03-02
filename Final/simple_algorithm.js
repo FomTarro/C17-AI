@@ -240,7 +240,7 @@ function searchEffectiveMoves(moves, enemyResistances, enemyImmunities, isTeam)
 				isResistant = true;
 			}
 		}
-		for (var k = 0; k < enemyImmunities.length, k++)
+		for (var k = 0; k < enemyImmunities.length; k++)
 		{
 			if (enemyImmunities[j].type.includes(moveType))
 			{
