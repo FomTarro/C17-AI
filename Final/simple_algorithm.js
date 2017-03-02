@@ -155,8 +155,11 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 
 	for (var i = 0; i < moves.length; i++)
 	{
+		console.log("Looking at move: " + moves[i])
 		for(var j = 0; j < enemyWeaknesses.length; j++)
 		{
+			console.log("Looking at weakness: " + enemyWeaknesses[j]);
+			console.log("Looking at weakness type: " + enemyWeaknesses[j].type);
 			// if this move is effective, add it to the list
 			if (enemyWeaknesses[j].type.includes(moves[i].type))
 			{
@@ -164,7 +167,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 			}
 		}
 	}
-
+	console.log("BEST MOVES: "+ bestMoves);
 	// check that there were possible good moves, otherwise return false
 	if (bestMoves.length != 0)
 	{
