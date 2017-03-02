@@ -124,7 +124,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 			if (movePicked == false)
 			{
 				console.log("This pokemon has no effective moves.");
-				console.log("Looking for a effective move in the team...");
+				console.log("Looking for an effective move in the team...");
 				movePicked = searchTeamMoves(teamPokes, enemyWeaknesses);
 				if (movePicked == true)
 				{
@@ -135,10 +135,13 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 				{
 					// poor bot is getting desperate. look for a move that is resistant
 					//LEVEL_EFFECTIVE = 1;
-
+					console.log("The team has no effective moves.");
+					console.log("Looking for a resistant move...");
 					movePicked = searchMoves(moves, enemyWeaknesses, isTeam);
 					if (movePicked == false)
 					{
+						console.log("This pokemon has no resistant moves.");
+						console.log("Looking for a resistant move in the team...");
 						isSwitch = true;
 						// search the team for a pokemon with moves that are resistant
 						movePicked = searchTeamMoves(teamPokes, enemyWeaknesses);
@@ -149,6 +152,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 						}
 						else
 						{
+							console.log("Sucks to be you. Pick randomly!");
 							// wow, that sucks. pick a move at random since they're all ineffective
 							move = getRandomInt(1, currPoke.moves.length);
 						}
@@ -189,7 +193,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 	for (var i = 0; i < moves.length; i++)
 	{
 		console.log("Looking at move: " + moves[i])
-		console.log("Looking at move type: " + moves[i].type)
+		//console.log("Looking at move type: " + moves[i].type)
 		for(var j = 0; j < enemyWeaknesses.length; j++)
 		{
 			moveType = getMoveType(moves[i]);
