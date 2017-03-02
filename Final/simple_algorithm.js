@@ -12,7 +12,7 @@ function QueryMove(aMove)
 	console.log(MoveData[aMove]);
 }
 
-function getMoveType(aMove)
+function getMoveType(aMove))
 {
 	console.log("RETRIEVING MOVE TYPE");
 	if (aMove.includes("60")
