@@ -58,7 +58,7 @@ _client.on('chat:private', function(event){
 
 // A message has been recieved in a room you are in
 _client.on('chat:public', function(event) {
-  console.log(event.data);
+  //console.log(event.data);
 });
 
 // A chat command has given us back information in HTML format. Joy!
@@ -145,7 +145,6 @@ _client.on('battle:start', function(event) {
   console.log("\n+------------" + event.room);
   _ourTeam = [];
   _theirTeam = [];
-  _client.send("gl;hf!", event.room)
   _client.send("/timer on", event.room)
 });
 
