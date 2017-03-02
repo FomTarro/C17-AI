@@ -1,8 +1,8 @@
 var aMonMove = require('./move');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
-var move = new aMonMove();
-var bestIndividualMove = new aMonMove();
-var bestTeamMove = new aMonMove();
+var move;
+var bestIndividualMove;
+var bestTeamMove;
 var switch_ID = 0;
 var isSwitch = false;
 
@@ -10,6 +10,7 @@ function QueryMove(aMove)
 {
 	console.log("QUERY");
 	console.log(MoveData[aMove]);
+	return MoveData[aMove];
 }
 
 function getMoveType(aMove)
@@ -175,7 +176,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 function setMove(aMove)
 {
 	console.log("Setting move");
-	move = aMove;
+	move = QueryMove(aMove);
 	console.log(move);
 }
 
