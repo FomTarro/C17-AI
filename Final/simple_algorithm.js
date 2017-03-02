@@ -100,14 +100,14 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 	var LEVEL_EFFECTIVE = 2;
 
 	console.log("Looking for a supereffective move...");
-	movePicked = searchMoves(moves, enemyWeaknesses, isTeam, LEVEL_EFFECTIVE);
+	movePicked = searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
 
 	// if bot unable to pick a supereffective move, look at the other team pokes
 	if (movePicked == false)
 	{
 		console.log("This pokemon has no supereffective moves.");
 		console.log("Looking for a supereffective move in the team...");
-		movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, LEVEL_EFFECTIVE);
+		movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
 		// if a supereffective move was found, switch out
 		if (movePicked == true)
 		{
@@ -121,14 +121,14 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 			// too bad, look for moves with normal effectiveness
 			LEVEL_EFFECTIVE = 0;
 
-			movePicked = searchMoves(moves, enemyWeaknesses, isTeam, LEVEL_EFFECTIVE);
+			movePicked = searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
 			// there were no normal moves, so look for a team poke that has one
 			// NOTE: THIS IS NOT TAKING INTO ACCOUNT TEAM POKE STATS SO THE CHOSEN POKE MAY BE A BAD CHOICE
 			if (movePicked == false)
 			{
 				console.log("This pokemon has no effective moves.");
 				console.log("Looking for an effective move in the team...");
-				movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, LEVEL_EFFECTIVE);
+				movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
 				if (movePicked == true)
 				{
 					isSwitch = true;
@@ -140,14 +140,14 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 					LEVEL_EFFECTIVE = 1;
 					console.log("The team has no effective moves.");
 					console.log("Looking for a resistant move...");
-					movePicked = searchMoves(moves, enemyWeaknesses, isTeam, LEVEL_EFFECTIVE);
+					movePicked = searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
 					if (movePicked == false)
 					{
 						console.log("This pokemon has no resistant moves.");
 						console.log("Looking for a resistant move in the team...");
 						isSwitch = true;
 						// search the team for a pokemon with moves that are resistant
-						movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, LEVEL_EFFECTIVE);
+						movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
 						if (movePicked == true)
 						{
 							isSwitch = true;
@@ -319,13 +319,13 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 	return movePicked;
 }
 
-function searchTeamMoves(teamPokes, enemyWeaknesses, effectiveness)
+function searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, effectiveness)
 {
 	var movePicked = false;
 	var isTeam = true;
 	for (var i = 0; i < teamPokes.length; i++)
 	{
-		movePicked = searchMoves(teamPokes[i].moves, enemyWeaknesses, isTeam, effectiveness);
+		movePicked = searchMoves(teamPokes[i].moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, effectiveness);
 		if (bestTeamMove.basePower > bestIndividualMove.basePower)
 		{
 			// the overall team move is better, so pick that one
