@@ -2,6 +2,16 @@ var move;
 var bestIndividualMove;
 var bestTeamMove;
 var switch_ID = 0;
+var isSwitch = false;
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getIsSwitch()
+{
+	return isSwitch;
+}
 
 /* An algorithm that chooses an action to take based on the supereffectiveness of the move
 *  on the enemy pokemon.
@@ -72,7 +82,8 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 		// if a supereffective move was found, switch out
 		if (movePicked == true)
 		{
-			_ourActiveMon = _ourTeam[switch_ID]
+			isSwitch = true;
+			//_ourActiveMon = _ourTeam[switch_ID]
 		}
 		else
 		{
@@ -87,7 +98,8 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 				movePicked = searchTeamMoves(teamPokes, enemyWeaknesses);
 				if (movePicked == true)
 				{
-					_ourActiveMon = _ourTeam[switch_ID];
+					isSwitch = true;
+					//_ourActiveMon = _ourTeam[switch_ID];
 				}
 				else
 				{
@@ -97,16 +109,18 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 					movePicked = searchMoves(moves, enemyWeaknesses, isTeam);
 					if (movePicked == false)
 					{
+						isSwitch = true;
 						// search the team for a pokemon with moves that are resistant
 						movePicked = searchTeamMoves(teamPokes, enemyWeaknesses);
 						if (movePicked == true)
 						{
-							_ourActiveMon = _ourTeam[switch_ID];
+							isSwitch = true;
+							//_ourActiveMon = _ourTeam[switch_ID];
 						}
 						else
 						{
 							// wow, that sucks. pick a move at random since they're all ineffective
-							move = getRandomInt(1, _ourActiveMon.moves.length);
+							move = getRandomInt(1, currPoke.moves.length);
 						}
 					}
 				}
@@ -142,7 +156,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 	for (var i = 0; i < moves.length; i++)
 	{
 		// if this move is effective, add it to the list
-		if (enemyWeaknesses.includes(moves[i].type))
+		if (enemyWeaknesses.type.includes(moves[i].type))
 		{
 			bestMoves.push(moves[i]);
 		}
