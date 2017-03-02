@@ -195,6 +195,8 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 		// pick the move with the highest base power
 		for (var j = 0; j < bestMoves.length; j++)
 		{
+			console.log("This move's base power:");
+			console.log(bestMoves[j].basePower);
 			if (bestMoveForThisMon.basePower < bestMoves[j].basePower)
 			{
 				bestMoveForThisMon = bestMoves[j];
