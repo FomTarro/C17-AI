@@ -92,11 +92,14 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 
 	//var LEVEL_EFFECTIVE = 2;
 
+	console.log("Looking for a supereffective move...");
 	movePicked = searchMoves(moves, enemyWeaknesses, isTeam);
 
 	// if bot unable to pick a supereffective move, look at the other team pokes
 	if (movePicked == false)
 	{
+		console.log("This pokemon has no supereffective moves.");
+		console.log("Looking for a supereffective move in the team...");
 		movePicked = searchTeamMoves(teamPokes, enemyWeaknesses);
 		// if a supereffective move was found, switch out
 		if (movePicked == true)
@@ -106,6 +109,8 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 		}
 		else
 		{
+			console.log("The team has no supereffective moves.");
+			console.log("Looking for an effective move...");
 			// too bad, look for moves with normal effectiveness
 			//LEVEL_EFFECTIVE = 0;
 
@@ -114,6 +119,8 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 			// NOTE: THIS IS NOT TAKING INTO ACCOUNT TEAM POKE STATS SO THE CHOSEN POKE MAY BE A BAD CHOICE
 			if (movePicked == false)
 			{
+				console.log("This pokemon has no effective moves.");
+				console.log("Looking for a effective move in the team...");
 				movePicked = searchTeamMoves(teamPokes, enemyWeaknesses);
 				if (movePicked == true)
 				{
