@@ -12,12 +12,12 @@ function QueryMove(aMove)
 	console.log(MoveData[aMove]);
 }
 
-function getMoveType(aMove))
+function getMoveType(aMove)
 {
 	console.log("RETRIEVING MOVE TYPE");
-	if (aMove.includes("60")
+	if (aMove.includes("60"))
 	    {
-	    	aMove = substring(0, indexOf("60"));
+	    	aMove = aMove.substring(0, aMove.indexOf("60"));
 	    }
 	console.log(MoveData[aMove].type);
 	return MoveData[aMove].type;
