@@ -203,8 +203,8 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 	//var bestMoveBasePower = getMovePower(bestMoveForThisMon);
 	console.log("BEST MOVES: "+ bestMoves);
 	// check that there were possible good moves, otherwise return false
-	if (bestMoves.length > 0)
-	{
+// 	if (bestMoves.length > 0)
+// 	{
 		// pick the move with the highest base power
 		// TODO: Add the algorithm to measure tradeoff of power vs accuracy
 // 		for (var j = 0; j < bestMoves.length; j++)
@@ -217,6 +217,7 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 // 				bestMoveForThisMon = bestMoves[j];
 // 			}
 // 		}
+		bestMoveForThisMon = bestMoves[0];
 		console.log("Best move for this pokemon: " + JSON.stringify(bestMoveForThisMon));
 		if (isTeam)
 		{
@@ -231,7 +232,7 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 			setMove(bestMoveForThisMon);
 		}
 		movePicked = true;
-	}
+//	}
 	return movePicked;
 }
 
@@ -245,8 +246,8 @@ function searchEffectiveMoves(moves, enemyResistances, enemyImmunities, isTeam)
 
 	console.log("Moves: " + moves);
 	//console.log("Enemy weaknesses: " + enemyWeaknesses);
-	console.log("Enemy resistances: " + enemyResistances);
-	console.log("Enemy immunities: " + enemyImmunities);
+	console.log("Enemy resistances: " + JSON.stringify(enemyResistances));
+	console.log("Enemy immunities: " + JSON.stringify(enemyImmunities));
 
 	for (var i = 0; i < moves.length; i++)
 	{
