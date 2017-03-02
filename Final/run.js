@@ -1,5 +1,6 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
+var MoveData = require('./PokeClient/moves').BattleMovedex;
 var _client = new PokeClient();
 
 var Credentials = require("./credentials");
@@ -177,7 +178,7 @@ _client.on('battle:rule', function(event){
 
 // A request is being made of us. We must decide how to respond.
 _client.on('battle:request', function(event){
-  //console.log(JSON.stringify(event));
+  console.log(JSON.stringify(event));
   //console.log(JSON.stringify(event.data.active));; 
  
   setTimeout(makeDecision, 1000, event);
@@ -207,18 +208,23 @@ _client.on('battle:request', function(event){
       // pick a team member at random until we select one that has not fainted
       do{
         var switchChoice = getRandomInt(0, 5);
-      }while(_ourTeam[switchChoice].condition.includes('fnt'))
+      }while(_ourTeam[switchChoice].condition.includes('fnt') || _ourTeam[switchChoice].active == true)
       response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
+    }
+    else if(event.data.wait != undefined && event.data.wait == true){
+    	_client.send("Hahaha, your Pokemon are weak!", event.room);
     }
     else{
       // gives us a list of possible moves for out currently active mon
       // this is important 
-      var possibleMoves = event.data.active[0].moves
+      var possibleMoves = event.data.active[0].moves;
+      var bestIndex = 0;
       do{
-        // otherwise, pick a random move from our move list
-        var move = getRandomInt(1, possibleMoves.length); 
-      }while(possibleMoves[move-1].disabled == true || possibleMoves[move-1].pp < 0)
-      response = '/choose move ' + move + '|' + _reqNum;
+        // otherwise, pick the best move in terms of power and accuracy
+        var move = bestMovePowAcc(_ourActiveMon.moves)[bestIndex];
+        bestIndex++; 
+      }while(possibleMoves[move].disabled == true || possibleMoves[move].pp < 0)
+      response = '/choose move ' + (move + 1) + '|' + _reqNum;
       _ourLastMove = move;
     }
 
@@ -247,6 +253,7 @@ _client.on('battle:switch', function(event){
     console.log("MON: " + monName + " FULL: " + fullName);
     if(!isKnown(monName)){
       _theirTeam[monName] = switchedMon;
+      _theirActiveMon = _theirTeam[monName];
        /*  Do database queries for the builds used for this species in Randoms */ 
       var moves = getPossibleBattleMoves(fullName);
       console.log("POSSIBLE MOVES:")
@@ -257,6 +264,8 @@ _client.on('battle:switch', function(event){
       */
     }
     else{
+    	_theirActiveMon = _theirTeam[monName];
+    	
     	if(_theirTeam[monName].moves.length > 0)
     		_client.send("Oh look, it's that pathetic " + monName + " that knows " + _theirTeam[monName].moves.join(', '), event.room);
     	else
@@ -367,7 +376,78 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function QueryMove(move) {
+  return MoveData[move];
+}
+
 //AI Functions
+
+//returns the best move by considering the ratio between power and accuracy
+function bestMovePowAcc(movesList){
+	var bestRatio = 0.0;
+	var bestMoveIndex = -1;
+	var curRatio = 0.0;
+	var curIndex = 0;
+	
+	var finalAccuracy = 0;
+	
+	var ratios = [];
+	var rankedMoveIndecies = [];
+	
+	movesList.forEach(function(d){
+		curRatio = 0.0;
+		finalAccuracy = 0;
+		
+		if(d.includes("60"))
+			d = d.substring(0, d.indexOf("60"));
+			
+		if(QueryMove(d).basePower > 0){
+			if(QueryMove(d).accuracy == true)
+				finalAccuracy = 100;
+			else{
+				finalAccuracy = QueryMove(d).accuracy;
+			}
+			
+			if(QueryMove(d).basePower < finalAccuracy)
+				curRatio = QueryMove(d).basePower/finalAccuracy;
+			else
+				curRatio = finalAccuracy/QueryMove(d).basePower;
+				
+			if(curRatio > bestRatio){
+				bestRatio = curRatio;
+				bestMoveIndex = curIndex;
+			}
+			
+			ratios[curIndex] = curRatio;
+		}
+		else
+			ratios[curIndex] = 0;
+		
+		curIndex++;
+	});
+	
+	console.log("Best move out of " + movesList + " is "+ movesList[bestMoveIndex] + " at index " + bestMoveIndex);
+	console.log("Ratios before: " + ratios);
+	var rankedRatios = [];
+	
+	for(var j = 0; j < 4; j++){
+		rankedRatios[j] = ratios[j];
+	}
+	
+	rankedRatios = rankedRatios.sort();
+	rankedRatios = rankedRatios.reverse();
+	
+	console.log("Ratios after: " + ratios);
+	console.log("Ranked Ratio: " + rankedRatios);
+	
+	for(var i = 0; i < 4; i++){
+		rankedMoveIndecies[i] = ratios.indexOf(rankedRatios[i]);
+	}
+	
+	console.log("Ranked Moves: " + movesList[rankedMoveIndecies[0]] + ", " + movesList[rankedMoveIndecies[1]] + ", " + movesList[rankedMoveIndecies[2]] + ", " + movesList[rankedMoveIndecies[3]]);
+	
+	return rankedMoveIndecies;
+}
 
 function getPossibleBattleMoves(pokemon) {
   var species = pokemon.toLowerCase();
