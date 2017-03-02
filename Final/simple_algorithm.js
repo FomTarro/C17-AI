@@ -166,7 +166,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 	var move;
 	var movePicked = false;
 	var bestMoves = [];
-	var bestMoveForThisMon;
+	var bestMoveForThisMon = new aMonMove();
 	var moveType;
 
 	console.log("Moves: " + moves);
@@ -202,6 +202,7 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 				bestMoveForThisMon = bestMoves[j];
 			}
 		}
+		console.log("Best move for this pokemon: " + bestMoveForThisMon);
 		if (isTeam)
 		{
 			// we're doing team comparisons
