@@ -3,6 +3,8 @@ var mon = require('./mon');
 var _client = new PokeClient();
 // the move that is picked to perform for this mon
 var myMonMove = require('./move');
+var MoveData = require('./PokeClient/moves').BattleMovedex;
+var Algorithm = require('./simple_algorithm');
 
 var Credentials = require("./credentials");
 var _creds = new Credentials();
@@ -339,7 +341,7 @@ _client.on('battle:win', function(event){
 
 // Print what we're sending
 _client.on('internal:send', function(event){
-  //console.log(event);
+	console.log(event);
 });
 
 

@@ -1,3 +1,5 @@
+console.log("THIS IS A MOVE");
+console.log(move);
 var move;
 var bestIndividualMove;
 var bestTeamMove;
@@ -47,7 +49,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 
 	// the type of the current enemy field poke
 	//BUG TODO: This returns undefined
-	var enemyType = enemyPoke.type;
+	var enemyWeaknesses = enemyPoke.weaknesses;
 
 	var movePicked = false;
 	var isTeam = false;
@@ -63,12 +65,12 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 
 	console.log("I'm choosing which SUPEREFFECTIVE move to pick...");
 
-	movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE, isTeam);
+	movePicked = searchMoves(moves, enemyWeaknesses, LEVEL_EFFECTIVE, isTeam);
 
 	// if bot unable to pick a supereffective move, look at the other team pokes
 	if (movePicked == false)
 	{
-		movePicked = searchTeamMoves(teamPokes, enemyType, LEVEL_EFFECTIVE);
+		movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, LEVEL_EFFECTIVE);
 		// if a supereffective move was found, switch out
 		if (movePicked == true)
 		{
@@ -81,12 +83,12 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 			LEVEL_EFFECTIVE = 0;
 
 			console.log("No luck. I'm choosing which NORMALLY EFFECTIVE move to pick...");
-			movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE, isTeam);
+			movePicked = searchMoves(moves, enemyWeaknesses, LEVEL_EFFECTIVE, isTeam);
 			// there were no normal moves, so look for a team poke that has one
 			// NOTE: THIS IS NOT TAKING INTO ACCOUNT TEAM POKE STATS SO THE CHOSEN POKE MAY BE A BAD CHOICE
 			if (movePicked == false)
 			{
-				movePicked = searchTeamMoves(teamPokes, enemyType, LEVEL_EFFECTIVE);
+				movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, LEVEL_EFFECTIVE);
 				if (movePicked == true)
 				{
 					console.log("I picked a move! It was " + move.name);
@@ -98,11 +100,11 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 					LEVEL_EFFECTIVE = 1;
 
 					console.log("No luck. I'm choosing which RESISTANT move to pick...");
-					movePicked = searchMoves(moves, enemyType, LEVEL_EFFECTIVE, isTeam);
+					movePicked = searchMoves(moves, enemyWeaknesses, LEVEL_EFFECTIVE, isTeam);
 					if (movePicked == false)
 					{
 						// search the team for a pokemon with moves that are resistant
-						movePicked = searchTeamMoves(teamPokes, enemyType, LEVEL_EFFECTIVE);
+						movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, LEVEL_EFFECTIVE);
 						if (movePicked == true)
 						{
 							console.log("I picked a move! It was " + move.name);
@@ -136,7 +138,7 @@ function setHighestIndividual(aMove)
 	bestIndividualMove = aMove;
 }
 
-function searchMoves(moves, enemyType, effectiveness, isTeam)
+function searchMoves(moves, enemyWeaknesses, effectiveness, isTeam)
 {
 	var move;
 	var movePicked = false;
@@ -145,12 +147,12 @@ function searchMoves(moves, enemyType, effectiveness, isTeam)
 
 	console.log("Moves: " + moves);
 	//BUG TODO: getting undefined for enemyType
-	console.log("Enemy type: " + enemyType);
+	console.log("Enemy type: " + enemyWeaknesses);
 
 	for (var i = 0; i < moves.length; i++)
 	{
 		// if this move is effective, add it to the list
-		if (effectivenessJSON.weaknesses.includes(moves[i].type))
+		if (enemyWeaknesses.includes(moves[i].type))
 		{
 			bestMoves.push(moves[i]);
 		}
@@ -187,13 +189,13 @@ function searchMoves(moves, enemyType, effectiveness, isTeam)
 	return movePicked;
 }
 
-function searchTeamMoves(teamPokes, enemyType, effectiveness)
+function searchTeamMoves(teamPokes, enemyWeaknesses, effectiveness)
 {
 	var movePicked = false;
 	var isTeam = true;
 	for (var i = 0; i < teamPokes.length; i++)
 	{
-		movePicked = searchMoves(teamPokes[i].moves, enemyType, effectiveness, isTeam);
+		movePicked = searchMoves(teamPokes[i].moves, enemyWeaknesses, effectiveness, isTeam);
 		if (bestTeamMove.basePower > bestIndividualMove.basePower)
 		{
 			// the overall team move is better, so pick that one
