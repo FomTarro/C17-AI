@@ -16,10 +16,15 @@ var _theirTeam =[];
 
 // rules to consider (in general, only one enemy at a time can be under "sleep" status)
 var _rules = [];
+
+// the number of the request being asked of us. This is effectively turn number, but not necessarily the case.
 var _reqNum = 0;
 
 // who we have out
 var _ourActiveMon;
+var _ourLastMove = -1;
+
+
 var _theirActiveMon;
 
 // variables for which player in the room is who
@@ -112,7 +117,7 @@ _client.on('chat:html', function(event) {
     var intimidate = "I know all about " + effectivenessJSON.species + " and how it is weak to ";
     
     for(var key in _theirTeam){
-      if(key == effectivenessJSON.species){
+      if(effectivenessJSON.species.toLowerCase().includes(key.toLowerCase())){
         _theirTeam[key].weaknesses = effectivenessJSON.weaknesses;
         _theirTeam[key].resistances = effectivenessJSON.resistances;
         _theirTeam[key].immunities = effectivenessJSON.immunities;
@@ -196,7 +201,16 @@ _client.on('battle:request', function(event){
   }
   else{
     // pick a random move from our move list
-    var move = getRandomInt(1, _ourActiveMon.moves.length); 
+    var move = 1;
+    // if we're holding a choice item, and we have already done a move
+    if(_ourActiveMon.item.toLowerCase().includes("choice") && _ourLastMove != -1){
+      // we need to keep using that move
+      move = _ourLastMove;
+    }
+    else{
+      move = getRandomInt(1, _ourActiveMon.moves.length); 
+    }
+    _ourLastMove = move;
     response = '/choose move ' + move + '|' + _reqNum;
   }
 
@@ -205,8 +219,11 @@ _client.on('battle:request', function(event){
 
 // A switch has happened, either through deliberate switch or drag-out.
 _client.on('battle:switch', function(event){
+
   //console.log(JSON.stringify(event.data));
   if(event.data.pokemon.includes(_weAre)){
+    // reset our last move tracker
+    _ourLastMove = -1;
     console.log("We send out: " + event.data.details + " with " + event.data.hp + "HP");
     // cycle through list to find which of our guys is active
     for(var i = 0; i < _ourTeam.length; i++){
@@ -228,8 +245,8 @@ _client.on('battle:switch', function(event){
     console.log("MON: " + monName + " FULL: " + fullName);
     if(!isKnown(monName)){
       _theirTeam[monName] = switchedMon;
-       /*  Do database queries for the builds used for this species in Randoms */
-      var moves = getPossibleBattleMoves(_theirTeam[monName]);
+       /*  Do database queries for the builds used for this species in Randoms */ 
+      var moves = getPossibleBattleMoves(fullName);
       console.log("POSSIBLE MOVES:")
       console.log(moves)
       _client.send("/weakness " + fullName, event.room)
@@ -249,9 +266,6 @@ _client.on('battle:switch', function(event){
     for(var key in _theirTeam){
       console.log(_theirTeam[key])
   }*/
-  //_theirActiveMon = _theirTeam[monName]
-  //console.log("THEIR ACTIVE MON:")
-  //console.log(_theirActiveMon);
   //console.log("Team Comp: " + JSON.stringify(event.data.side.pokemon))
 });
 
@@ -267,7 +281,7 @@ _client.on('battle:move', function(event){
       Re-evaluate estimates here.
     */
     for(var key in _theirTeam){
-    	if(key == _theirTeam[user].species){
+    	if(key == _theirTeam[user].species && !_theirTeam[user].moves.includes(event.data.move)){
     		_theirTeam[user].moves.push(event.data.move);
     	}
     }
@@ -330,9 +344,8 @@ function updateKnowledge(){
 	var knowledge = "Okay, so you have ";
 	for(var key in _theirTeam){
       knowledge += "a " + _theirTeam[key].species + ", ";
-    }
-    
-    return knowledge;
+    }  
+  return knowledge;
 }
 
 function isKnown(monName){
@@ -357,9 +370,18 @@ function getRandomInt(min, max) {
 //AI Functions
 
 function getPossibleBattleMoves(pokemon) {
-  var species = pokemon.species.toLowerCase();
-  // need to de-hyphenate the name for lookup 
-  // need to compress spaces out of mon name, apparently 
+  var species = pokemon.toLowerCase();
+  var speciesSplit = '';
+  if(species.includes('-')){
+    	species = species.split('-');
+  }
+  else if(species.includes(' '))
+    	species = species.split(' ');
+
+  for(var i = 0; i < species.length; i++){
+    speciesSplit = speciesSplit + species[i];
+  }
+  species = speciesSplit;
   console.log(species)
   if(BattleFormatsData.BattleFormatsData[species] !== undefined 
      && BattleFormatsData.BattleFormatsData[species].randomBattleMoves !== undefined) {
