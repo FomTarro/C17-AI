@@ -150,7 +150,7 @@ _client.on('self:challenges', function(event) {
 
 // A battle starts.
 _client.on('battle:start', function(event) {
-  console.log("\n+------------" + event.room);
+  console.log("\n>> " + event.room);
   _ourTeam = [];
   _theirTeam = [];
   _client.send("Prepare to be crushed by my vast knowledge!", event.room)
@@ -177,60 +177,63 @@ _client.on('battle:rule', function(event){
 
 // A request is being made of us. We must decide how to respond.
 _client.on('battle:request', function(event){
-  //console.log(JSON.stringify(event.data));
-  _reqNum = event.data.rqid;
-  console.log("OUR TEAM:")
-  for(var i = 0; i < event.data.side.pokemon.length; i++){
-    _ourTeam[i] = event.data.side.pokemon[i];
-    console.log(JSON.stringify(_ourTeam[i]));
-  }
-  // if we have never done a switch, set out active guy to our lead
-  if(_ourActiveMon == undefined)
-      _ourActiveMon = _ourTeam[0];
+  setTimeout(makeDecision, 1000, event);
+  
+  function makeDecision(event){
+    //console.log(JSON.stringify(event.data));
+    _reqNum = event.data.rqid;
 
-  var response = '';
-  var forceSwitch = (event.data.forceSwitch != undefined && event.data.forceSwitch.includes(true));
+    // update our team
+    for(var i = 0; i < event.data.side.pokemon.length; i++){
+      _ourTeam[i] = event.data.side.pokemon[i];
+      //console.log(JSON.stringify(_ourTeam[i]));
+    }
 
-  if(forceSwitch){
-    // pick a team member at random until we select one that has not fainted
-    do{
-      var switchChoice = getRandomInt(0, 5);
-      response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
-    }while(_ourTeam[switchChoice].condition.includes('fnt'))
-  }
-  else{
-    // pick a random move from our move list
-    var move = 1;
-    // if we're holding a choice item, and we have already done a move
-    if(_ourActiveMon.item.toLowerCase().includes("choice") && _ourLastMove != -1){
-      // we need to keep using that move
-      move = _ourLastMove;
+    // cycle through list to find which of our guys is active
+    for(var i = 0; i < _ourTeam.length; i++){
+      if(_ourTeam[i].active == true){
+        _ourActiveMon = _ourTeam[i];
+        break;
+      }
+    }
+
+    var response = '';
+    var forceSwitch = (event.data.forceSwitch != undefined && event.data.forceSwitch.includes(true));
+
+    if(forceSwitch){
+      // pick a team member at random until we select one that has not fainted
+      do{
+        var switchChoice = getRandomInt(0, 5);
+        response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
+      }while(_ourTeam[switchChoice].condition.includes('fnt'))
     }
     else{
-      move = getRandomInt(1, _ourActiveMon.moves.length); 
+      var move = 1;
+      // if we're holding a choice item, and we have already done a move
+      if(_ourActiveMon.item.toLowerCase().includes("choice") && _ourLastMove != -1){
+        // we need to keep using that move
+        move = _ourLastMove;
+      }
+      else{
+        // otherwise, pick a random move from our move list
+        move = getRandomInt(1, _ourActiveMon.moves.length); 
+      }
+      _ourLastMove = move;
+      response = '/choose move ' + move + '|' + _reqNum;
     }
-    _ourLastMove = move;
-    response = '/choose move ' + move + '|' + _reqNum;
-  }
 
-  _client.send(response, event.room)
+    _client.send(response, event.room)
+  };
+
 });
 
 // A switch has happened, either through deliberate switch or drag-out.
 _client.on('battle:switch', function(event){
-
   //console.log(JSON.stringify(event.data));
   if(event.data.pokemon.includes(_weAre)){
     // reset our last move tracker
     _ourLastMove = -1;
     console.log("We send out: " + event.data.details + " with " + event.data.hp + "HP");
-    // cycle through list to find which of our guys is active
-    for(var i = 0; i < _ourTeam.length; i++){
-      if(_ourTeam[i].active = true){
-        _ourActiveMon = _ourTeam[i];
-        break;
-      }
-    }
   }
   else if(event.data.pokemon.includes(_theyAre)){
     console.log("They send out: " + event.data.details + " with " + event.data.hp  + "HP");
@@ -250,9 +253,8 @@ _client.on('battle:switch', function(event){
       console.log(moves)
       _client.send("/weakness " + fullName, event.room)
       /* Make estimates about remaining data fields based on those estimates
-
         !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
-    */
+      */
     }
     else{
     	if(_theirTeam[monName].moves.length > 0)
@@ -261,11 +263,7 @@ _client.on('battle:switch', function(event){
     		_client.send("Oh look, it's that pathetic " + monName + " that ran away before making any moves", event.room);
     }
   }
-  /*console.log("\nP2 REVEALED TEAM:")
-    for(var key in _theirTeam){
-      console.log(_theirTeam[key])
-  }*/
-  //console.log("Team Comp: " + JSON.stringify(event.data.side.pokemon))
+
 });
 
 // A move has been used.
@@ -292,6 +290,9 @@ _client.on('battle:damage', function(event){
   console.log('damage')
   console.log(JSON.stringify(event))
   if(event.data.pokemon.includes(_theyAre)){
+    if(event.data.status != undefined && event.data.status == "fnt"){
+      // remove fainted mon from the list of enemies, as they are no longer a threat
+    }
     // update their hp
     //_theirTeam[parsePokeName(event.data.pokemon)].currentHP =
   }
