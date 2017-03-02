@@ -170,7 +170,9 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 
 function setMove(aMove)
 {
+	console.log("Setting move");
 	move = aMove;
+	console.log(move);
 }
 
 function setHighestIndividual(aMove)
@@ -222,11 +224,13 @@ function searchMoves(moves, enemyWeaknesses, isTeam)
 		console.log("Best move for this pokemon: " + bestMoveForThisMon);
 		if (isTeam)
 		{
+			console.log("This is a team search");
 			// we're doing team comparisons
 			setHighestIndividualMove(bestMoveForThisMon);
 		}
 		else
 		{
+			console.log("This is a single search");
 			// just looking for the best field poke move
 			setMove(bestMoveForThisMon);
 		}
