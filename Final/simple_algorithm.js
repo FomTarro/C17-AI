@@ -206,16 +206,17 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 	if (bestMoves.length > 0)
 	{
 		// pick the move with the highest base power
-		for (var j = 0; j < bestMoves.length; j++)
-		{
-			console.log("This move's base power:");
-			console.log(bestMoves[j].basePower);
-			thisMoveBasePower = getMovePower(bestMoves[j]);
-			if (bestMoveBasePower < thisMoveBasePower)
-			{
-				bestMoveForThisMon = bestMoves[j];
-			}
-		}
+		// TODO: Add the algorithm to measure tradeoff of power vs accuracy
+// 		for (var j = 0; j < bestMoves.length; j++)
+// 		{
+// 			console.log("This move's base power:");
+// 			console.log(bestMoves[j].basePower);
+// 			thisMoveBasePower = getMovePower(bestMoves[j]);
+// 			if (bestMoveBasePower < thisMoveBasePower)
+// 			{
+// 				bestMoveForThisMon = bestMoves[j];
+// 			}
+// 		}
 		console.log("Best move for this pokemon: " + JSON.stringify(bestMoveForThisMon));
 		if (isTeam)
 		{
