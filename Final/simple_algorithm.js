@@ -119,7 +119,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 			console.log("The team has no supereffective moves.");
 			console.log("Looking for an effective move...");
 			// too bad, look for moves with normal effectiveness
-			//LEVEL_EFFECTIVE = 0;
+			LEVEL_EFFECTIVE = 0;
 
 			movePicked = searchMoves(moves, enemyWeaknesses, isTeam, LEVEL_EFFECTIVE);
 			// there were no normal moves, so look for a team poke that has one
@@ -137,7 +137,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 				else
 				{
 					// poor bot is getting desperate. look for a move that is resistant
-					//LEVEL_EFFECTIVE = 1;
+					LEVEL_EFFECTIVE = 1;
 					console.log("The team has no effective moves.");
 					console.log("Looking for a resistant move...");
 					movePicked = searchMoves(moves, enemyWeaknesses, isTeam, LEVEL_EFFECTIVE);
@@ -167,7 +167,7 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 	}
 
 	console.log("I'm returning the move I picked");
-	console.log(move.name);
+	console.log(JSON.stringify(move));
 	// bot has picked a move, return it
 	return move;
 }
