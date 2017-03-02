@@ -16,10 +16,10 @@ function QueryMove(aMove)
 function getMovePower(aMove)
 {
 	console.log("RETRIEVING MOVE POWER");
-	if (aMove.includes("60"))
-	    {
-	    	aMove = aMove.substring(0, aMove.indexOf("60"));
-	    }
+// 	if (aMove.includes("60"))
+// 	    {
+// 	    	aMove = aMove.substring(0, aMove.indexOf("60"));
+// 	    }
 	console.log(MoveData[aMove].basePower);
 	return MoveData[aMove].basePower;
 }
