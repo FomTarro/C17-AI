@@ -108,7 +108,7 @@ _client.on('chat:html', function(event) {
         }
       }
     }
-    
+
     console.log(effectivenessJSON);
     for(var key in _theirTeam){
       if(key == effectivenessJSON.species){
@@ -166,10 +166,10 @@ _client.on('battle:rule', function(event){
 _client.on('battle:request', function(event){
   //console.log(JSON.stringify(event.data));
   _reqNum = event.data.rqid;
-  //console.log("OUR TEAM:")
+  console.log("OUR TEAM:")
   for(var i = 0; i < event.data.side.pokemon.length; i++){
     _ourTeam[i] = event.data.side.pokemon[i];
-    //console.log(JSON.stringify(_ourTeam[i]));
+    console.log(JSON.stringify(_ourTeam[i]));
   }
   // if we have never done a switch, set out active guy to our lead
   if(_ourActiveMon == undefined)
