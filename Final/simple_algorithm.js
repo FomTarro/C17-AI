@@ -52,7 +52,7 @@ function getMoveActions(ourMon, theirMon){
 }
 
 //Returns a list of switch actions
-function getMoveActions(ourMons, theirMon){
+function getSwitchActions(ourMons, theirMon){
 	var posActions = [];
 	
 	for(var i = 0; i < ourMons.length; i++){
@@ -483,6 +483,7 @@ var PoketronAlgorithm = function() {
 	this.SmartSwitch = SmartSwitch;
 	this.EscapeStrongMove = EscapeStrongMove;
 	this.getMoveActions = getMoveActions;
+	this.getSwitchActions = getSwitchActions;
 	return this;
 };
 
