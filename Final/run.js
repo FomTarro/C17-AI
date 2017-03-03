@@ -271,8 +271,16 @@ _client.on('battle:request', function(event){
 	    }
 	    
 	    console.log("Make Decision");
-	    var movesActions= Algorithm.getMoveActions(_ourActiveMon, _theirActiveMon);
-	    var switchActions = Algorithm.getSwitchActions(_ourTeam, _theirActiveMon);
+	    var ourActiveMon = SetMon(_ourActiveMon);
+	    var ourTeam = [new mon(), new mon(), new mon(),
+			  new mon(), new mon(), new mon()];
+	    for (var i = 0; i < _ourTeam.length; i++)
+	    {
+		    ourTeam[i] = SetMon(_ourTeam[i]);
+	    }
+	    
+	    var movesActions= Algorithm.getMoveActions(ourActiveMon, _theirActiveMon);
+	    var switchActions = Algorithm.getSwitchActions(ourTeam, _theirActiveMon);
 	    var list_actions = [];
 	    list_actions.concat(moveActions);
 	    list_actions.concat(switchActions);
@@ -531,7 +539,19 @@ function LastMon(){
 
 function SetMon(aMon)
 {
-	
+	var storeMonInfo = new mon();
+	    storeMonInfo.species = aMon.species;
+	    storeMonInfo.currentHP = aMon.currentHP;
+	    storeMonInfo.maxHP = aMon.maxHP;
+	    storeMonInfo.status = aMon.status;
+	    storeMonInfo.stats = aMon.stats;
+	    storeMonInfo.ability = aMon.ability;
+	    storeMonInfo.item = aMon.item;
+	    storeMonInfo.moves = aMon.moves;
+	    storeMonInfo.weaknesses = aMon.weaknesses;
+	    storeMonInfo.resistances = aMon.resistances;
+	    storeMonInfo.posMoves = aMon.posMoves;
+	return storeMonInfo;
 }
 
 //AI Functions
