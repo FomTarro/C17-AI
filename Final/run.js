@@ -271,8 +271,8 @@ _client.on('battle:request', function(event){
 	    }
 	    
 	    console.log("Make Decision");
-	    var movesActions= Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon).getMoveActions();
-	    var switchActions = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon).getSwitchActions();
+	    var movesActions= Algorithm.getMoveActions(_ourActiveMon, _theirActiveMon);
+	    var switchActions = Algorithm.getSwitchActions(_ourTeam, _theirActiveMon);
 	    var list_actions = [];
 	    list_actions.concat(moveActions);
 	    list_actions.concat(switchActions);
@@ -527,6 +527,11 @@ function LastMon(){
 		return true;
 	
 	return false;
+}
+
+function SetMon(aMon)
+{
+	
 }
 
 //AI Functions
