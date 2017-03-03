@@ -1,6 +1,7 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
+var Algorithm = require('./simple_algorithm');
 var _client = new PokeClient();
 
 var Credentials = require("./credentials");
@@ -181,7 +182,7 @@ _client.on('battle:request', function(event){
   console.log(JSON.stringify(event));
   //console.log(JSON.stringify(event.data.active));; 
  
-  setTimeout(makeDecision, 1000, event);
+  setTimeout(makeDecision, 5000, event);
   
   function makeDecision(event){
     //console.log(JSON.stringify(event.data));
@@ -220,8 +221,9 @@ _client.on('battle:request', function(event){
       var possibleMoves = event.data.active[0].moves;
       var bestIndex = 0;
       do{
+      	
         // otherwise, pick the best move in terms of power and accuracy
-        var move = bestMovePowAcc(_ourActiveMon.moves)[bestIndex];
+        var move = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon)[bestIndex];//Algorithm.bestMovePowAcc(_ourActiveMon.moves)[bestIndex];
         bestIndex++; 
       }while(possibleMoves[move].disabled == true || possibleMoves[move].pp < 0)
       response = '/choose move ' + (move + 1) + '|' + _reqNum;
@@ -382,72 +384,7 @@ function QueryMove(move) {
 
 //AI Functions
 
-//returns the best move by considering the ratio between power and accuracy
-function bestMovePowAcc(movesList){
-	var bestRatio = 0.0;
-	var bestMoveIndex = -1;
-	var curRatio = 0.0;
-	var curIndex = 0;
-	
-	var finalAccuracy = 0;
-	
-	var ratios = [];
-	var rankedMoveIndecies = [];
-	
-	movesList.forEach(function(d){
-		curRatio = 0.0;
-		finalAccuracy = 0;
-		
-		if(d.includes("60"))
-			d = d.substring(0, d.indexOf("60"));
-			
-		if(QueryMove(d).basePower > 0){
-			if(QueryMove(d).accuracy == true)
-				finalAccuracy = 100;
-			else{
-				finalAccuracy = QueryMove(d).accuracy;
-			}
-			
-			if(QueryMove(d).basePower < finalAccuracy)
-				curRatio = QueryMove(d).basePower/finalAccuracy;
-			else
-				curRatio = finalAccuracy/QueryMove(d).basePower;
-				
-			if(curRatio > bestRatio){
-				bestRatio = curRatio;
-				bestMoveIndex = curIndex;
-			}
-			
-			ratios[curIndex] = curRatio;
-		}
-		else
-			ratios[curIndex] = 0;
-		
-		curIndex++;
-	});
-	
-	console.log("Best move out of " + movesList + " is "+ movesList[bestMoveIndex] + " at index " + bestMoveIndex);
-	console.log("Ratios before: " + ratios);
-	var rankedRatios = [];
-	
-	for(var j = 0; j < 4; j++){
-		rankedRatios[j] = ratios[j];
-	}
-	
-	rankedRatios = rankedRatios.sort();
-	rankedRatios = rankedRatios.reverse();
-	
-	console.log("Ratios after: " + ratios);
-	console.log("Ranked Ratio: " + rankedRatios);
-	
-	for(var i = 0; i < 4; i++){
-		rankedMoveIndecies[i] = ratios.indexOf(rankedRatios[i]);
-	}
-	
-	console.log("Ranked Moves: " + movesList[rankedMoveIndecies[0]] + ", " + movesList[rankedMoveIndecies[1]] + ", " + movesList[rankedMoveIndecies[2]] + ", " + movesList[rankedMoveIndecies[3]]);
-	
-	return rankedMoveIndecies;
-}
+
 
 function getPossibleBattleMoves(pokemon) {
   var species = pokemon.toLowerCase();
