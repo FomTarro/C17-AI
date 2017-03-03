@@ -273,7 +273,8 @@ _client.on('battle:request', function(event){
 	    console.log("Make Decision");
 	    var movesActions= Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon).getMoveActions();
 	    var switchActions = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon).getSwitchActions();
-	    var list_actions.concat(moveActions);
+	    var list_actions = [];
+	    list_actions.concat(moveActions);
 	    list_actions.concat(switchActions);
 	    var bestAction;
 	    var chosenAction;
