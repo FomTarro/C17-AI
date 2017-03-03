@@ -1,5 +1,6 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
+var action = require('./action');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
 var DexData = require('./PokeClient/pokedex').BattlePokedex;
 var Algorithm = require('./simple_algorithm');
