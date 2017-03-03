@@ -1,6 +1,7 @@
 var PokeClient = require("./PokeClient/client");
 var mon = require('./mon');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
+var DexData = require('./PokeClient/pokedex').BattlePokedex;
 var Algorithm = require('./simple_algorithm');
 var _client = new PokeClient();
 
@@ -324,6 +325,8 @@ _client.on('battle:switch', function(event){
     var switchedMon = new mon();
     switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
     console.log("MON: " + monName + " FULL: " + fullName);
+    var dexLookup = QueryDex(fullName);
+    switchedMon.stats = dexLookup.baseStats;
     if(!isKnown(monName)){
       _theirTeam[monName] = switchedMon;
       _theirActiveMon = _theirTeam[monName];
@@ -447,12 +450,32 @@ function parsePokeName(name){
   return splitName;
 }
 
+function fullNameCompressor(pokemon){
+  var species = pokemon.toLowerCase();
+  var speciesSplit = '';
+  if(species.includes('-')){
+    	species = species.split('-');
+  }
+  else if(species.includes(' '))
+    	species = species.split(' ');
+
+  for(var i = 0; i < species.length; i++){
+    speciesSplit = speciesSplit + species[i];
+  }
+  species = speciesSplit;
+  return species;
+}
+
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function QueryMove(move) {
   return MoveData[move];
+}
+function QueryDex(mon) {
+    mon = fullNameCompressor(mon);
+    return DexData[mon];
 }
 
 function LastMon(){
@@ -472,21 +495,8 @@ function LastMon(){
 //AI Functions
 
 
-
 function getPossibleBattleMoves(pokemon) {
-  var species = pokemon.toLowerCase();
-  var speciesSplit = '';
-  if(species.includes('-')){
-    	species = species.split('-');
-  }
-  else if(species.includes(' '))
-    	species = species.split(' ');
-
-  for(var i = 0; i < species.length; i++){
-    speciesSplit = speciesSplit + species[i];
-  }
-  species = speciesSplit;
-  console.log(species)
+  var species = fullNameCompressor(pokemon)
   if(BattleFormatsData.BattleFormatsData[species] !== undefined 
      && BattleFormatsData.BattleFormatsData[species].randomBattleMoves !== undefined) {
     return BattleFormatsData.BattleFormatsData[species].randomBattleMoves;

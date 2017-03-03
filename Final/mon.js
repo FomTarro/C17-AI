@@ -4,6 +4,7 @@ function mon(){
     this.currentHP = 1;
     this.maxHP = 1;
     this.status ='';
+    this.stats =[];
     this.ability ='';
     this.item = '';
     this.moves = [];
