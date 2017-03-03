@@ -299,7 +299,36 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 
 	console.log("Moves: " + moves);
 	console.log("Enemy weaknesses: " + JSON.stringify(enemyWeaknesses));
+	bestMoves = moves;
+	for (var i = 0; i < moves.length; i++)
+	{
+		var moveType = getMoveType(moves[i]);
+		multipliers[i] = 1;
+		for(var j = 0; j < enemyWeaknesses.length; j++)
+		{
+			if (enemyWeaknesses[j].type.includes(moveType))
+			{
+				multipliers[i] = (enemyWeaknesses[j].multiplier);
+			}
+		}
+		for(var j = 0; j < enemyResistances.length; j++)
+		{
+			if (enemyResistances[j].type.includes(moveType))
+			{
+				multipliers[i] = (enemyResistances[j].multiplier);
+			}
+		}
+		for(var j = 0; j < enemyImmunities.length; j++)
+		{
+			if (enemyImmunities[j].type.includes(moveType))
+			{
+				multipliers[i] = (enemyImmunities[j].multiplier);
+			}
+		}
+	}
 
+
+		/*
 		for (var i = 0; i < moves.length; i++)
 		{
 			//console.log("Looking at move: " + moves[i])
@@ -318,12 +347,6 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 				}
 			}
 		}
-		//checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam);
-	
-	/*if (effectiveness == 0)
-	{
-		searchEffectiveMoves(moves, enemyResistances, enemyImmunities, isTeam, enemyWeaknesses);
-	}*/
 	
 
 		for (var i = 0; i < moves.length; i++)
@@ -373,6 +396,7 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 					multipliers.push(1);
 				}
 		}
+		*/
 		
 		console.log("BEST MOVES: " + bestMoves);
 		
@@ -460,7 +484,9 @@ function bestMovePowAcc(movesList, multipliers, moves){
 	for(var i = 0; i < 4; i++){
 		rankedMoveIndecies[i] = ratios.indexOf(rankedRatios[i]);
 	}
-	//HEY TOM U WERE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
+
+
 	console.log("Ranked Moves: " + movesList[rankedMoveIndecies[0]] + ", " + movesList[rankedMoveIndecies[1]] + ", " + movesList[rankedMoveIndecies[2]] + ", " + movesList[rankedMoveIndecies[3]]);
 	console.log("Ranked Indecies: " + rankedMoveIndecies);
 	return rankedMoveIndecies;
