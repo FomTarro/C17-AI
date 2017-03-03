@@ -134,18 +134,20 @@ _client.on('chat:html', function(event) {
       }
     }
     
-    if(theirs)
+    if(theirs){
+    	console.log("Opponent's Weaknesses Gathered: " + intimidate);
     	_client.send(intimidate, event.room);
+    }
     
     //UNCOMMENT IF YOU WANT TO SAY THE POKEMON WE KNOW IS IN THEIR TEAM
     //_client.send(updateKnowledge(), event.room);
     
-    setTimeout(sayweak, 3000, event);
+    setTimeout(sayweak, 2000, event);
     
     function sayweak(event){
     	curWeaknesses = [];
 	    if (effectivenessJSON.species.toLowerCase().includes(_ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')).toLowerCase())) {
-			console.log("IM WEAK: " + JSON.stringify(effectivenessJSON.weaknesses));
+			console.log("Our Weaknesses Gathered: " + JSON.stringify(effectivenessJSON.weaknesses));
 			curWeaknesses = effectivenessJSON.weaknesses;
 		}
 	}
@@ -189,7 +191,7 @@ _client.on('battle:player', function(event){
 
 // Get rules for this battle.
 _client.on('battle:rule', function(event){
-  console.log(JSON.stringify(event.data));
+  //console.log(JSON.stringify(event.data));
   for(var i = 0; i < event.data.length; i++){
     _rules[i] = event.data[i];
   }
@@ -197,13 +199,20 @@ _client.on('battle:rule', function(event){
 
 // A request is being made of us. We must decide how to respond.
 _client.on('battle:request', function(event){
-  console.log(JSON.stringify(event));
+  //console.log(JSON.stringify(event));
   //console.log(JSON.stringify(event.data.active));; 
- 
-  setTimeout(makeDecision, 4000, event);
+
+	//wait for opponent to complete actions before starting turn
+	if(event.data.wait != undefined && event.data.wait == true){
+		console.log("Waiting for opponent...");
+		return -1;
+	}
+	
+  	setTimeout(makeDecision, 2000, event);
   
   function makeDecision(event){
-    //console.log(JSON.stringify(event.data));
+  	console.log("-------------------------START TURN-------------------------------------------");
+    //console.log(JSON.stringify(event));
     _reqNum = event.data.rqid;
 
     // update our team
@@ -219,12 +228,15 @@ _client.on('battle:request', function(event){
         break;
       }
     }
+    console.log("OUR POKEMON: " + _ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')));
+    console.log("THEIR POKEMON: " + _theirActiveMon.species + "\n");
 
     var response = '';
     var forceSwitch = (event.data.forceSwitch != undefined && event.data.forceSwitch.includes(true));
     
     //try to switch out if against a bad matchup
-    if(!LastMon()){
+    //console.log("DETERMINE BAD MATCHUP \n")
+    if(!forceSwitch){
 	    if(Algorithm.BestIsBad(_ourActiveMon, _ourTeam, _theirActiveMon)){
 	    	_client.send("Err... This isn't a great matchup for me", event.room);
 	    	forceSwitch = true;
@@ -240,12 +252,13 @@ _client.on('battle:request', function(event){
     
     _client.send("/weakness " + _ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')), event.room);
     
-    setTimeout(chooseAction, 3500, event);
+    setTimeout(chooseAction, 4000, event);
     function chooseAction(event){
-	    console.log("WEAKNESSES: " + JSON.stringify(curWeaknesses));
+	    //console.log("GET OUR WEAKNESSES: " + JSON.stringify(curWeaknesses) + "\n");
 	    
 	    //try to switch out if a known move is strong against you and you don't have a strong move
-	    if(!LastMon()){
+	    //console.log("DETERMINE IF OUR MON IS IN DANGER \n");
+	    if(!forceSwitch){
 		    if(Algorithm.EscapeStrongMove(curWeaknesses, _theirActiveMon) && _ourTeam[Algorithm.SmartSwitch(_ourTeam, _theirActiveMon)].active == false){
 		    	_client.send("I know what you're up to!", event.room);
 		    	forceSwitch = true;
@@ -259,25 +272,27 @@ _client.on('battle:request', function(event){
 		    }
 	    }
 	    
-	    
-			if (LastMon()) {
-				if (forceSwitch)
-					_client.send("Well... This sucks...", event.room);
-					
-				if(event.data.active != undefined)
-					forceSwitch = false;
-			}
-			
-			if(event.data.wait != undefined && event.data.wait == true)
-				forceSwitch = false;
-
+	    if(_theirActiveMon.moves.length > 0)
+	    	console.log("Known Moves OF " + _theirActiveMon.species + ": " + _theirActiveMon.moves.join(', '));
+	    else
+	    	console.log("Known Moves OF " + _theirActiveMon.species + ": NONE");
+	   
+	   console.log("Make Decision");
 	
 	    if(forceSwitch){
+	    	var breakOut = 100;
 	      // pick a team member at random until we select one that has not fainted
 	      do{
+	      	if(breakOut < 0){
+	      		console.log("BREAKOUTXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+	      		break;
+	      	}
 	        var switchChoice = Algorithm.SmartSwitch(_ourTeam, _theirActiveMon);
+	        breakOut--;
 	      }while(_ourTeam[switchChoice].condition.includes('fnt') || _ourTeam[switchChoice].active == true)
-	      response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
+	      
+	      if(breakOut >= 0)
+	      	response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
 	    }
 	    else if(event.data.wait != undefined && event.data.wait == true){
 	    	_client.send("Hahaha, your Pokemon are weak!", event.room);
@@ -292,7 +307,7 @@ _client.on('battle:request', function(event){
 	        //Pick the best move to deal the most damage
 	        var move = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon)[bestIndex];
 	        //console.log("OUR MON LISTED: " + _ourActiveMon.moves[move] + " POSSIBLE: " + possibleMoves[move].id);
-	        console.log("Choose index " + move + " since bestIndex is " + bestIndex);
+	        //console.log("Choose index " + move + " since bestIndex is " + bestIndex);
 	        bestIndex++; 
 	      }while(possibleMoves[move].disabled == true || possibleMoves[move].pp < 0)
 	      response = '/choose move ' + (move + 1) + '|' + _reqNum;
@@ -322,7 +337,7 @@ _client.on('battle:switch', function(event){
     
     var switchedMon = new mon();
     switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
-    console.log("MON: " + monName + " FULL: " + fullName);
+    //console.log("MON: " + monName + " FULL: " + fullName);
     if(!isKnown(monName)){
       _theirTeam[monName] = switchedMon;
       _theirActiveMon = _theirTeam[monName];
@@ -352,18 +367,20 @@ _client.on('battle:move', function(event){
   if(event.data.pokemon.includes(_theyAre)){
     console.log("Opponent used: " + event.data.move + "!");
     var user = parsePokeName(event.data.pokemon);
-    console.log(_theirTeam[user]);
-    console.log("User: " + user);
+    //console.log(_theirTeam[user]);
+    //console.log("User: " + user);
     /*
       we know _theirTeam[user] knows event.data.move, so we can better estimate which build it is using. 
       Re-evaluate estimates here.
     */
     for(var key in _theirTeam){
-    	if(_theirTeam[user] == undefined){
+    	if(_theirTeam[user] != undefined){
 	    	if(key == _theirTeam[user].species && !_theirTeam[user].moves.includes(event.data.move)){
 	    		_theirTeam[user].moves.push(event.data.move);
 	    	}
     	}
+    	else
+    		console.log("UNDEFINED");
     }
   }
 });
@@ -371,7 +388,7 @@ _client.on('battle:move', function(event){
 // Damage has been dealt.
 _client.on('battle:damage', function(event){
   console.log('damage')
-  console.log(JSON.stringify(event))
+  console.log(JSON.stringify(event.data))
   if(event.data.pokemon.includes(_theyAre)){
     if(event.data.status != undefined && event.data.status == "fnt"){
       // remove fainted mon from the list of enemies, as they are no longer a threat

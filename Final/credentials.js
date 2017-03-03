@@ -2,8 +2,8 @@
 
 function credentials(){
     
-    this.username = 'PokeTron5000'
-    this.password = 'cs4341'
+    this.username = 'PokeTron1447'
+    //this.password = 'cs4341'
 
     return this;
 }
