@@ -116,81 +116,6 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 
 	//console.log("Looking for a supereffective move...");
 	return searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
-	
-	console.log("Moves: " + moves);
-	console.log("Ranked Array: " + rankedArray);
-	console.log("Ranked Moves: " + moves[rankedArray[0]] + ", " + moves[rankedArray[1]] + ", " + moves[rankedArray[2]] + ", " + moves[rankedArray[3]]);
-
-	return rankedArray;
-
-	// if bot unable to pick a supereffective move, look at the other team pokes
-	if (movePicked == false)
-	{
-		//console.log("This pokemon has no supereffective moves.");
-		//console.log("Looking for a supereffective move in the team...");
-		//movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
-		// if a supereffective move was found, switch out
-		if (movePicked == true)
-		{
-			isSwitch = true;
-			//_ourActiveMon = _ourTeam[switch_ID]
-		}
-		else
-		{
-			//console.log("The team has no supereffective moves.");
-			//console.log("Looking for an effective move...");
-			// too bad, look for moves with normal effectiveness
-			LEVEL_EFFECTIVE = 0;
-
-			movePicked = searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
-			// there were no normal moves, so look for a team poke that has one
-			// NOTE: THIS IS NOT TAKING INTO ACCOUNT TEAM POKE STATS SO THE CHOSEN POKE MAY BE A BAD CHOICE
-			if (movePicked == false)
-			{
-				//console.log("This pokemon has no effective moves.");
-				//console.log("Looking for an effective move in the team...");
-				//movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
-				if (movePicked == true)
-				{
-					isSwitch = true;
-					//_ourActiveMon = _ourTeam[switch_ID];
-				}
-				else
-				{
-					// poor bot is getting desperate. look for a move that is resistant
-					LEVEL_EFFECTIVE = 1;
-					//console.log("The team has no effective moves.");
-					//console.log("Looking for a resistant move...");
-					movePicked = searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
-					if (movePicked == false)
-					{
-						//console.log("This pokemon has no resistant moves.");
-						//console.log("Looking for a resistant move in the team...");
-						isSwitch = true;
-						// search the team for a pokemon with moves that are resistant
-						//movePicked = searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, LEVEL_EFFECTIVE);
-						if (movePicked == true)
-						{
-							isSwitch = true;
-							//_ourActiveMon = _ourTeam[switch_ID];
-						}
-						else
-						{
-							//console.log("Sucks to be you. Pick randomly!");
-							// wow, that sucks. pick a move at random since they're all ineffective
-							moveID = getRandomInt(1, currPoke.moves.length);
-							move = moves[moveID]
-						}
-					}
-				}
-			}
-		}
-	}
-
-	//console.log("I'm returning the move I picked");
-	//console.log(JSON.stringify(move));
-	// bot has picked a move, return it
-	return move;
 }
 
 function setMove(aMove)
@@ -207,37 +132,7 @@ function setHighestIndividual(aMove)
 
 function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
 {
-	var movePicked = false;
-	var thisMoveBasePower = 0;
-	//var bestMoveBasePower = getMovePower(bestMoveForThisMon);
-	//console.log("BEST MOVES: "+ bestMoves);
-	// check that there were possible good moves, otherwise return false
- 	if (bestMoves.length > 0)
- 	{
-		// pick the move with the highest base power
-		//var rankedBest = bestMovePowAcc(bestMoves);
-		
-		//rankedBest.forEach(function(d){
-			//rankedArray.push(d);
-		//});
-		
-		/*bestMoveForThisMon = bestMoves[0];
-		//console.log("Best move for this pokemon: " + JSON.stringify(bestMoveForThisMon));
-		if (isTeam)
-		{
-			//console.log("This is a team search");
-			// we're doing team comparisons
-			setHighestIndividualMove(bestMoveForThisMon);
-		}
-		else
-		{
-			//console.log("This is a single search");
-			// just looking for the best field poke move
-			setMove(bestMoveForThisMon);
-		}
-		movePicked = true;*/
-	}
-	return movePicked;
+	
 }
 
 function searchEffectiveMoves(moves, enemyResistances, enemyImmunities, isTeam, enemyWeaknesses)
@@ -326,77 +221,6 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 			}
 		}
 	}
-
-
-		/*
-		for (var i = 0; i < moves.length; i++)
-		{
-			//console.log("Looking at move: " + moves[i])
-			////console.log("Looking at move type: " + moves[i].type)
-			for(var j = 0; j < enemyWeaknesses.length; j++)
-			{
-				moveType = getMoveType(moves[i]);
-				//QueryMove(moves[i]);
-				////console.log("Looking at weakness: " + enemyWeaknesses[j]);
-				//console.log("Looking at weakness type: " + enemyWeaknesses[j].type);
-				// if this move is effective, add it to the list
-				if (enemyWeaknesses[j].type.includes(moveType))
-				{
-					bestMoves.push(moves[i]);
-					multipliers.push(2);
-				}
-			}
-		}
-	
-
-		for (var i = 0; i < moves.length; i++)
-		{
-			//console.log("Looking at move: " + moves[i])
-			////console.log("Looking at move type: " + moves[i].type)
-			for(var j = 0; j < enemyResistances.length; j++)
-			{
-				moveType = getMoveType(moves[i]);
-				//QueryMove(moves[i]);
-				////console.log("Looking at weakness: " + enemyWeaknesses[j]);
-				//console.log("Looking at weakness type: " + enemyResistances[j].type);
-				// if this move is effective, add it to the list
-				if (enemyResistances[j].type.includes(moveType))
-				{
-					bestMoves.push(moves[i]);
-					multipliers.push(.5);
-				}
-			}
-		}
-		//checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam);
-		
-		for (var i = 0; i < moves.length; i++)
-		{
-			//console.log("Looking at move: " + moves[i])
-			////console.log("Looking at move type: " + moves[i].type)
-			for(var j = 0; j < enemyImmunities.length; j++)
-			{
-				moveType = getMoveType(moves[i]);
-				//QueryMove(moves[i]);
-				////console.log("Looking at weakness: " + enemyWeaknesses[j]);
-				//console.log("Looking at weakness type: " + enemyResistances[j].type);
-				// if this move is effective, add it to the list
-				if (enemyImmunities[j].type.includes(moveType))
-				{
-					bestMoves.push(moves[i]);
-					multipliers.push(0);
-				}
-			}
-		}
-		
-		for (var i = 0; i < moves.length; i++)
-		{
-				if (!bestMoves.includes(moves[i]))
-				{
-					bestMoves.push(moves[i]);
-					multipliers.push(1);
-				}
-		}
-		*/
 		
 		console.log("BEST MOVES: " + bestMoves);
 		
@@ -423,6 +247,129 @@ function searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmu
 // 		}
 	}
 	return movePicked;
+}
+
+
+function BestIsBad(currPokem, teamPokemons, enemyPokem) {
+	rankedArray = [];
+
+	var moveID = 0;
+	//console.log(enemyPoke);
+
+	// 4 moves the current bot pokemon can use
+	var moves = currPokem.moves;
+	// the list of the opposing pokemon team; starts empty and fills as switches happen
+	var enemyTeam = [];
+	// known moves by the curr enemy field pokemon
+	var enemyPokeMoves = [];
+
+	// the heuristic to base decisions on
+	/* type matchups according to the type-chart:
+	3: ineffecive; no damage
+	2: super effective; damage x2
+	1: resistant; damage halved
+	0: normal; damage based on move power/pokemon stats
+	*/
+	//BUG TODO: This returns undefined
+	var enemyWeaknesses = enemyPokem.weaknesses;
+	var enemyResistances = enemyPokem.resistances;
+	var enemyImmunities = enemyPokem.immunities;
+
+	var movePicked = false;
+	var isTeam = false;
+
+	// start with super effective moves
+	var LEVEL_EFFECTIVE = 2;
+
+	//console.log("Looking for a supereffective move...");
+	var moveType = getMoveType(moves[searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE)[0]]);
+	for (var j = 0; j < enemyResistances.length; j++) {
+		if (enemyResistances[j].type.includes(moveType)) {
+			return true;
+		}
+	}
+	for (var j = 0; j < enemyImmunities.length; j++) {
+		if (enemyImmunities[j].type.includes(moveType)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function SmartSwitch(ourPokes ,enemyPokem) {
+	
+	var enemyWeaknesses = enemyPokem.weaknesses;
+	var enemyResistances = enemyPokem.resistances;
+	var enemyImmunities = enemyPokem.immunities;
+
+	var movePicked = false;
+	var isTeam = false;
+
+	// start with super effective moves
+	var LEVEL_EFFECTIVE = 2;
+
+	//look for a mon with a super effective move
+	for(var i = 0; i < 6; i++){
+		if(!ourPokes[i].condition.includes('fnt')){
+			var moveType = getMoveType(ourPokes[i].moves[searchMoves(ourPokes[i].moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE)[0]]);
+			for (var j = 0; j < enemyWeaknesses.length; j++) {
+				if (enemyWeaknesses[j].type.includes(moveType)) {
+					return i;
+				}
+			}
+		}
+	}
+	
+	//look for a mon that has a move that isnt weak against the opponent
+	for(var i = 0; i < 6; i++){
+		if(!ourPokes[i].condition.includes('fnt')){
+			var moveType = getMoveType(ourPokes[i].moves[searchMoves(ourPokes[i].moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE)[0]]);
+			for (var j = 0; j < enemyResistances.length; j++) {
+				if (!enemyResistances[j].type.includes(moveType)) {
+					
+					for (var j = 0; j < enemyImmunities.length; j++) {
+						if (!enemyImmunities[j].type.includes(moveType)) {
+							return i;
+						}
+					}
+
+				}
+			}
+		}
+	}
+
+	//just give a random mon
+	return getRandomInt(0, 5);
+}
+
+function EscapeStrongMove(currWeaknesses, enemyPokem) {
+	
+	for(var i = 0; i < enemyPokem.moves.length; i ++){
+		console.log("MOVE IN Q: " + enemyPokem.moves[i].toLowerCase().split(' ').join(''));
+		var theMove = enemyPokem.moves[i].toLowerCase().split(' ').join('').replace(/<(-)*?>/gm, '');
+		console.log("MOVE IN Q: " + theMove);
+		var moveType = QueryMove(theMove).type;
+		
+		for(var j = 0; j < currWeaknesses.length; j++){
+			if(currWeaknesses[j].type == moveType)
+				return true;
+		}
+	}
+	
+	/*var moveType = getMoveType(moves[searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE)[0]]);
+	for (var j = 0; j < enemyResistances.length; j++) {
+		if (enemyResistances[j].type.includes(moveType)) {
+			return true;
+		}
+	}
+	for (var j = 0; j < enemyImmunities.length; j++) {
+		if (enemyImmunities[j].type.includes(moveType)) {
+			return true;
+		}
+	}*/
+
+	return false;
 }
 
 //returns the best move by considering the ratio between power and accuracy
@@ -461,7 +408,7 @@ function bestMovePowAcc(movesList, multipliers, moves){
 				bestMoveIndex = curIndex;
 			}
 			
-			ratios[curIndex] = curRatio;
+			ratios[curIndex] = curRatio + (curIndex/10);
 		}
 		else
 			ratios[curIndex] = 0 + (curIndex/10);
@@ -502,6 +449,9 @@ var PoketronAlgorithm = function() {
 	this.setMove = setMove;
 	this.setHighestIndividual = setHighestIndividual;
 	this.PrioritizeSuperEffective = PrioritizeSuperEffective;
+	this.BestIsBad = BestIsBad;
+	this.SmartSwitch = SmartSwitch;
+	this.EscapeStrongMove = EscapeStrongMove;
 	return this;
 };
 

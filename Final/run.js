@@ -22,6 +22,8 @@ var _rules = [];
 // the number of the request being asked of us. This is effectively turn number, but not necessarily the case.
 var _reqNum = 0;
 
+var curWeaknesses = [];
+
 // who we have out
 var _ourActiveMon;
 var _ourLastMove = -1;
@@ -117,8 +119,11 @@ _client.on('chat:html', function(event) {
     }
     var intimidate = "I know all about " + effectivenessJSON.species + " and how it is weak to ";
     
+    var theirs = false;
+    
     for(var key in _theirTeam){
       if(effectivenessJSON.species.toLowerCase().includes(key.toLowerCase())){
+      	theirs = true;
         _theirTeam[key].weaknesses = effectivenessJSON.weaknesses;
         _theirTeam[key].resistances = effectivenessJSON.resistances;
         _theirTeam[key].immunities = effectivenessJSON.immunities;
@@ -128,9 +133,22 @@ _client.on('chat:html', function(event) {
         });
       }
     }
-    _client.send(intimidate, event.room);
     
-    _client.send(updateKnowledge(), event.room);
+    if(theirs)
+    	_client.send(intimidate, event.room);
+    
+    //UNCOMMENT IF YOU WANT TO SAY THE POKEMON WE KNOW IS IN THEIR TEAM
+    //_client.send(updateKnowledge(), event.room);
+    
+    setTimeout(sayweak, 3000, event);
+    
+    function sayweak(event){
+    	curWeaknesses = [];
+	    if (effectivenessJSON.species.toLowerCase().includes(_ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')).toLowerCase())) {
+			console.log("IM WEAK: " + JSON.stringify(effectivenessJSON.weaknesses));
+			curWeaknesses = effectivenessJSON.weaknesses;
+		}
+	}
 
   }
 });
@@ -182,7 +200,7 @@ _client.on('battle:request', function(event){
   console.log(JSON.stringify(event));
   //console.log(JSON.stringify(event.data.active));; 
  
-  setTimeout(makeDecision, 5000, event);
+  setTimeout(makeDecision, 4000, event);
   
   function makeDecision(event){
     //console.log(JSON.stringify(event.data));
@@ -204,35 +222,72 @@ _client.on('battle:request', function(event){
 
     var response = '';
     var forceSwitch = (event.data.forceSwitch != undefined && event.data.forceSwitch.includes(true));
-
-    if(forceSwitch){
-      // pick a team member at random until we select one that has not fainted
-      do{
-        var switchChoice = getRandomInt(0, 5);
-      }while(_ourTeam[switchChoice].condition.includes('fnt') || _ourTeam[switchChoice].active == true)
-      response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
+    
+    //try to switch out if against a bad matchup
+    if(!LastMon()){
+	    if(Algorithm.BestIsBad(_ourActiveMon, _ourTeam, _theirActiveMon)){
+	    	_client.send("Err... This isn't a great matchup for me", event.room);
+	    	forceSwitch = true;
+	    	
+	    	if(LastMon()){
+				if(forceSwitch)
+					_client.send("Well... This sucks...", event.room);
+				
+				forceSwitch = false;
+			}
+	    }
     }
-    else if(event.data.wait != undefined && event.data.wait == true){
-    	_client.send("Hahaha, your Pokemon are weak!", event.room);
-    }
-    else{
-      // gives us a list of possible moves for out currently active mon
-      // this is important 
-      var possibleMoves = event.data.active[0].moves;
-      var bestIndex = 0;
-      do{
-      	
-        // otherwise, pick the best move in terms of power and accuracy
-        var move = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon)[bestIndex];//Algorithm.bestMovePowAcc(_ourActiveMon.moves)[bestIndex];
-        console.log("OUR MON LISTED: " + _ourActiveMon.moves[move] + " POSSIBLE: " + possibleMoves[move].id);
-        console.log("Choose index " + move + " since bestIndex is " + bestIndex);
-        bestIndex++; 
-      }while(possibleMoves[move].disabled == true || possibleMoves[move].pp < 0)
-      response = '/choose move ' + (move + 1) + '|' + _reqNum;
-      _ourLastMove = move;
-    }
-
-    _client.send(response, event.room)
+    
+    _client.send("/weakness " + _ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')), event.room);
+    
+    setTimeout(chooseAction, 3500, event);
+    function chooseAction(event){
+	    console.log("WEAKNESSES: " + JSON.stringify(curWeaknesses));
+	    
+	    //try to switch out if a known move is strong against you and you don't have a strong move
+	    if(!LastMon()){
+		    if(Algorithm.EscapeStrongMove(curWeaknesses, _theirActiveMon) && _ourTeam[Algorithm.SmartSwitch(_ourTeam, _theirActiveMon)].active == false){
+		    	_client.send("I know what you're up to!", event.room);
+		    	forceSwitch = true;
+		    	
+		    	if(LastMon()){
+					if(forceSwitch)
+						_client.send("Well... This sucks...", event.room);
+					
+					forceSwitch = false;
+				}
+		    }
+	    }
+	
+	    if(forceSwitch){
+	      // pick a team member at random until we select one that has not fainted
+	      do{
+	        var switchChoice = Algorithm.SmartSwitch(_ourTeam, _theirActiveMon);
+	      }while(_ourTeam[switchChoice].condition.includes('fnt') || _ourTeam[switchChoice].active == true)
+	      response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
+	    }
+	    else if(event.data.wait != undefined && event.data.wait == true){
+	    	_client.send("Hahaha, your Pokemon are weak!", event.room);
+	    }
+	    else{
+	      // gives us a list of possible moves for out currently active mon
+	      // this is important 
+	      var possibleMoves = event.data.active[0].moves;
+	      var bestIndex = 0;
+	      do{
+	      	
+	        //Pick the best move to deal the most damage
+	        var move = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon)[bestIndex];
+	        //console.log("OUR MON LISTED: " + _ourActiveMon.moves[move] + " POSSIBLE: " + possibleMoves[move].id);
+	        console.log("Choose index " + move + " since bestIndex is " + bestIndex);
+	        bestIndex++; 
+	      }while(possibleMoves[move].disabled == true || possibleMoves[move].pp < 0)
+	      response = '/choose move ' + (move + 1) + '|' + _reqNum;
+	      _ourLastMove = move;
+	    }
+	
+	    _client.send(response, event.room)
+    };
   };
 
 });
@@ -382,6 +437,20 @@ function getRandomInt(min, max) {
 
 function QueryMove(move) {
   return MoveData[move];
+}
+
+function LastMon(){
+	var numFnt = 0;
+	
+	for(var i = 0; i < 6; i++){
+		if(_ourTeam[i].condition.includes('fnt'))
+			numFnt++;
+	}
+	
+	if(numFnt == 5)
+		return true;
+	
+	return false;
 }
 
 //AI Functions
