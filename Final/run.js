@@ -224,6 +224,8 @@ _client.on('battle:request', function(event){
       	
         // otherwise, pick the best move in terms of power and accuracy
         var move = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon)[bestIndex];//Algorithm.bestMovePowAcc(_ourActiveMon.moves)[bestIndex];
+        console.log("OUR MON LISTED: " + _ourActiveMon.moves[move] + " POSSIBLE: " + possibleMoves[move].id);
+        console.log("Choose index " + move + " since bestIndex is " + bestIndex);
         bestIndex++; 
       }while(possibleMoves[move].disabled == true || possibleMoves[move].pp < 0)
       response = '/choose move ' + (move + 1) + '|' + _reqNum;

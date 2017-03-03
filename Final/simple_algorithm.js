@@ -115,14 +115,10 @@ function PrioritizeSuperEffective(currPoke, teamPokes, enemyPoke)
 	var LEVEL_EFFECTIVE = 2;
 
 	//console.log("Looking for a supereffective move...");
-	console.log("SuperEffective");
-	searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
-	console.log("Effective");
-	searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, 0);
-	console.log("Resistance");
-	searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, 1);
+	return searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE);
 	
 	console.log("Moves: " + moves);
+	console.log("Ranked Array: " + rankedArray);
 	console.log("Ranked Moves: " + moves[rankedArray[0]] + ", " + moves[rankedArray[1]] + ", " + moves[rankedArray[2]] + ", " + moves[rankedArray[3]]);
 
 	return rankedArray;
@@ -219,11 +215,11 @@ function checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam)
  	if (bestMoves.length > 0)
  	{
 		// pick the move with the highest base power
-		var rankedBest = bestMovePowAcc(bestMoves);
+		//var rankedBest = bestMovePowAcc(bestMoves);
 		
-		rankedBest.forEach(function(d){
-			rankedArray.push(d);
-		});
+		//rankedBest.forEach(function(d){
+			//rankedArray.push(d);
+		//});
 		
 		/*bestMoveForThisMon = bestMoves[0];
 		//console.log("Best move for this pokemon: " + JSON.stringify(bestMoveForThisMon));
@@ -253,10 +249,10 @@ function searchEffectiveMoves(moves, enemyResistances, enemyImmunities, isTeam, 
 	var isWeak = false;
 	var bestMoveForThisMon = new aMonMove();
 
-	//console.log("Moves: " + moves);
+	console.log("Moves: " + moves);
 	//console.log("Enemy weaknesses: " + enemyWeaknesses);
-	console.log("Enemy resistances: " + JSON.stringify(enemyResistances));
-	console.log("Enemy immunities: " + JSON.stringify(enemyImmunities));
+	//console.log("Enemy resistances: " + JSON.stringify(enemyResistances));
+	//console.log("Enemy immunities: " + JSON.stringify(enemyImmunities));
 
 	for (var i = 0; i < moves.length; i++)
 	{
@@ -299,12 +295,11 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 	var movePicked = false;
 	var bestMoves = [];
 	var bestMoveForThisMon = new aMonMove();
+	var multipliers = [];
 
-	//console.log("Moves: " + moves);
+	console.log("Moves: " + moves);
 	console.log("Enemy weaknesses: " + JSON.stringify(enemyWeaknesses));
 
-	if (effectiveness == 2)
-	{
 		for (var i = 0; i < moves.length; i++)
 		{
 			//console.log("Looking at move: " + moves[i])
@@ -319,19 +314,18 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 				if (enemyWeaknesses[j].type.includes(moveType))
 				{
 					bestMoves.push(moves[i]);
+					multipliers.push(2);
 				}
 			}
 		}
-		checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam);
-	}
+		//checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam);
 	
-	if (effectiveness == 0)
+	/*if (effectiveness == 0)
 	{
 		searchEffectiveMoves(moves, enemyResistances, enemyImmunities, isTeam, enemyWeaknesses);
-	}
+	}*/
 	
-	if (effectiveness == 1)
-	{
+
 		for (var i = 0; i < moves.length; i++)
 		{
 			//console.log("Looking at move: " + moves[i])
@@ -346,12 +340,43 @@ function searchMoves(moves, enemyWeaknesses, enemyResistances, enemyImmunities, 
 				if (enemyResistances[j].type.includes(moveType))
 				{
 					bestMoves.push(moves[i]);
+					multipliers.push(.5);
 				}
 			}
 		}
-		checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam);
-	}
-	return movePicked;
+		//checkGoodMoves(bestMoves, bestMoveForThisMon, isTeam);
+		
+		for (var i = 0; i < moves.length; i++)
+		{
+			//console.log("Looking at move: " + moves[i])
+			////console.log("Looking at move type: " + moves[i].type)
+			for(var j = 0; j < enemyImmunities.length; j++)
+			{
+				moveType = getMoveType(moves[i]);
+				//QueryMove(moves[i]);
+				////console.log("Looking at weakness: " + enemyWeaknesses[j]);
+				//console.log("Looking at weakness type: " + enemyResistances[j].type);
+				// if this move is effective, add it to the list
+				if (enemyImmunities[j].type.includes(moveType))
+				{
+					bestMoves.push(moves[i]);
+					multipliers.push(0);
+				}
+			}
+		}
+		
+		for (var i = 0; i < moves.length; i++)
+		{
+				if (!bestMoves.includes(moves[i]))
+				{
+					bestMoves.push(moves[i]);
+					multipliers.push(1);
+				}
+		}
+		
+		console.log("BEST MOVES: " + bestMoves);
+		
+		return bestMovePowAcc(bestMoves, multipliers, moves);
 }
 
 function searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmunities, effectiveness)
@@ -377,7 +402,7 @@ function searchTeamMoves(teamPokes, enemyWeaknesses, enemyResistances, enemyImmu
 }
 
 //returns the best move by considering the ratio between power and accuracy
-function bestMovePowAcc(movesList){
+function bestMovePowAcc(movesList, multipliers, moves){
 	var bestRatio = 0.0;
 	var bestMoveIndex = -1;
 	var curRatio = 0.0;
@@ -402,10 +427,10 @@ function bestMovePowAcc(movesList){
 				finalAccuracy = QueryMove(d).accuracy;
 			}
 			
-			if(QueryMove(d).basePower < finalAccuracy)
+			/*if(QueryMove(d).basePower < finalAccuracy)
 				curRatio = QueryMove(d).basePower/finalAccuracy;
-			else
-				curRatio = finalAccuracy/QueryMove(d).basePower;
+			else*/
+				curRatio = finalAccuracy + (QueryMove(d).basePower * multipliers[curIndex]);
 				
 			if(curRatio > bestRatio){
 				bestRatio = curRatio;
@@ -415,7 +440,9 @@ function bestMovePowAcc(movesList){
 			ratios[curIndex] = curRatio;
 		}
 		else
-			ratios[curIndex] = 0;
+			ratios[curIndex] = 0 + (curIndex/10);
+		
+		console.log(d + " has a ratio of " + curRatio);
 		
 		curIndex++;
 	});
@@ -423,19 +450,19 @@ function bestMovePowAcc(movesList){
 	////console.log("Best move out of " + movesList + " is "+ movesList[bestMoveIndex] + " at index " + bestMoveIndex);
 	var rankedRatios = [];
 	
-	for(var j = 0; j < movesList.length; j++){
+	for(var j = 0; j < 4; j++){
 		rankedRatios[j] = ratios[j];
 	}
 	
 	rankedRatios = rankedRatios.sort();
 	rankedRatios = rankedRatios.reverse();
 	
-	for(var i = 0; i < movesList.length; i++){
+	for(var i = 0; i < 4; i++){
 		rankedMoveIndecies[i] = ratios.indexOf(rankedRatios[i]);
 	}
-	
+	//HEY TOM U WERE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	console.log("Ranked Moves: " + movesList[rankedMoveIndecies[0]] + ", " + movesList[rankedMoveIndecies[1]] + ", " + movesList[rankedMoveIndecies[2]] + ", " + movesList[rankedMoveIndecies[3]]);
-	
+	console.log("Ranked Indecies: " + rankedMoveIndecies);
 	return rankedMoveIndecies;
 }
 
