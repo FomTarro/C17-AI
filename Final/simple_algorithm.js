@@ -46,6 +46,44 @@ function getIsSwitch() {
 	return isSwitch;
 }
 
+//Returns 1 if pokemonA is faster than pokemonB
+function isFaster(pokemonA, pokemonB){
+	if(pokemonA.stats.spe >= pokemonB.stats.spe)
+		return 1;
+		
+	return 0;
+}
+
+//Returns the amount of damage move is expected to do on target
+function outDamage(move, target){
+	
+	var moveType = QueryMove(move).type;
+	var enemyWeaknesses = target.weaknesses;
+	var enemyResistances = target.resistances;
+	var enemyImmunities = target.immunities;
+
+	for (var j = 0; j < enemyWeaknesses.length; j++) {
+		if (enemyWeaknesses[j].type.includes(moveType)) {
+			return QueryMove(move).basePower * enemyWeaknesses[j].multiplier;
+		}
+	}
+	for (var j = 0; j < enemyResistances.length; j++) {
+		if (enemyResistances[j].type.includes(moveType)) {
+			return QueryMove(move).basePower * enemyResistances[j].multiplier;
+		}
+	}
+	for (var j = 0; j < enemyImmunities.length; j++) {
+		if (enemyImmunities[j].type.includes(moveType)) {
+			return QueryMove(move).basePower * enemyImmunities[j].multiplier;
+		}
+	}
+	
+	return QueryMove(move).basePower;
+
+}
+
+//function inDamage
+
 /* An algorithm that chooses an action to take based on the supereffectiveness of the move
  *  on the enemy pokemon.
  *

@@ -235,50 +235,21 @@ _client.on('battle:request', function(event){
     var response = '';
     var forceSwitch = (event.data.forceSwitch != undefined && event.data.forceSwitch.includes(true));
     
-    //try to switch out if against a bad matchup
-    //console.log("DETERMINE BAD MATCHUP \n")
-    if(!forceSwitch){
-	    if(Algorithm.BestIsBad(_ourActiveMon, _ourTeam, _theirActiveMon)){
-	    	_client.send("Err... This isn't a great matchup for me", event.room);
-	    	forceSwitch = true;
-	    	
-	    	if(LastMon()){
-				if(forceSwitch)
-					_client.send("Well... This sucks...", event.room);
-				
-				forceSwitch = false;
-			}
-	    }
-    }
-    
     _client.send("/weakness " + _ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')), event.room);
     
     setTimeout(chooseAction, 4000, event);
     function chooseAction(event){
-	    //console.log("GET OUR WEAKNESSES: " + JSON.stringify(curWeaknesses) + "\n");
+    	
 	    
-	    //try to switch out if a known move is strong against you and you don't have a strong move
-	    //console.log("DETERMINE IF OUR MON IS IN DANGER \n");
-	    if(!forceSwitch){
-		    if(Algorithm.EscapeStrongMove(curWeaknesses, _theirActiveMon) && _ourTeam[Algorithm.SmartSwitch(_ourTeam, _theirActiveMon)].active == false){
-		    	_client.send("I know what you're up to!", event.room);
-		    	forceSwitch = true;
-		    	
-		    	if(LastMon()){
-					if(forceSwitch)
-						_client.send("Well... This sucks...", event.room);
-					
-					forceSwitch = false;
-				}
-		    }
-	    }
-	    
-	    if(_theirActiveMon.moves.length > 0)
+	    if(_theirActiveMon.moves.length > 0){
 	    	console.log("Known Moves OF " + _theirActiveMon.species + ": " + _theirActiveMon.moves.join(', '));
-	    else
+	    	if(_theirActiveMon.moves.length != 4)
+	    		console.log("Other Possible Moves: " + _theirActiveMon.posMoves.join(', '));
+	    }
+	    else{
 	    	console.log("Known Moves OF " + _theirActiveMon.species + ": NONE");
-	   
-	   console.log("Make Decision");
+	    	console.log("Possible Moves: " + _theirActiveMon.posMoves.join(', '));
+	    }
 	
 	    if(forceSwitch){
 	    	var breakOut = 100;
@@ -292,10 +263,17 @@ _client.on('battle:request', function(event){
 	        breakOut--;
 	      }while(_ourTeam[switchChoice].condition.includes('fnt') || _ourTeam[switchChoice].active == true)
 	      
-	      if(breakOut >= 0)
+	      if(breakOut >= 0){
 	      	response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
+	      	_client.send(response, event.room)
+	      	return -1;
+	      }
 	    }
-	    else if(event.data.wait != undefined && event.data.wait == true){
+	    
+	    console.log("Make Decision");
+	    
+	    
+	    if(event.data.wait != undefined && event.data.wait == true){
 	    	_client.send("Hahaha, your Pokemon are weak!", event.room);
 	    }
 	    else{
@@ -348,6 +326,7 @@ _client.on('battle:switch', function(event){
       var moves = getPossibleBattleMoves(fullName);
       console.log("POSSIBLE MOVES:")
       console.log(moves)
+      _theirTeam[monName].posMoves = moves;
       _client.send("/weakness " + fullName, event.room)
       /* Make estimates about remaining data fields based on those estimates
         !!! Enemy HP is represented by percentage in the event JSON while your HP is represented normally !!!
@@ -380,6 +359,8 @@ _client.on('battle:move', function(event){
     	if(_theirTeam[user] != undefined){
 	    	if(key == _theirTeam[user].species && !_theirTeam[user].moves.includes(event.data.move)){
 	    		_theirTeam[user].moves.push(event.data.move);
+	    		console.log("Filter: " + event.data.move.toLowerCase().replace(/-/gm, '').replace(/ /gm, ''));
+	    		_theirTeam[user].posMoves = _theirTeam[user].posMoves.filter(function(d){return d != event.data.move.toLowerCase().replace(/-/gm, '').replace(/ /gm, '');});
 	    	}
     	}
     	else
@@ -479,7 +460,7 @@ function fullNameCompressor(pokemon){
     speciesSplit = speciesSplit + species[i];
   }
   species = speciesSplit;
-  return species;
+  return species.replace(/%/gm, '');
 }
 
 function getRandomInt(min, max) {

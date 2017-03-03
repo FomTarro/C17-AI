@@ -10,6 +10,7 @@ function mon(){
     this.moves = [];
     this.weaknesses = [];
     this.resistances = [];
+    this.posMoves = [];
 
     return this;
 }
