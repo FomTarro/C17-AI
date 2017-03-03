@@ -324,28 +324,23 @@ _client.on('battle:request', function(event){
 // A switch has happened, either through deliberate switch or drag-out.
 _client.on('battle:switch', function(event){
   //console.log(JSON.stringify(event.data));
-  var monName = event.data.details.split(',')[0];
-  var fullName = event.data.details.split(',')[0];
   if(event.data.pokemon.includes(_weAre)){
     // reset our last move tracker
     _ourLastMove = -1;
     console.log("We send out: " + event.data.details + " with " + event.data.hp + "HP");
-    _client.send("/weakness " + fullName, event.room)
   }
   else if(event.data.pokemon.includes(_theyAre)){
     console.log("They send out: " + event.data.details + " with " + event.data.hp  + "HP");
+    var monName = event.data.details.split(',')[0];
+    var fullName = event.data.details.split(',')[0];
     if(monName.includes('-'))
     	monName = monName.substring(0, monName.indexOf('-'));
     
     var switchedMon = new mon();
     switchedMon.species = monName; // various forms might not report as species (ie rotom-wash might be reportred as just rotom!)
-<<<<<<< HEAD
     //console.log("MON: " + monName + " FULL: " + fullName);
-=======
-    console.log("MON: " + monName + " FULL: " + fullName);
     var dexLookup = QueryDex(fullName);
     switchedMon.stats = dexLookup.baseStats;
->>>>>>> origin/master
     if(!isKnown(monName)){
       _theirTeam[monName] = switchedMon;
       _theirActiveMon = _theirTeam[monName];
