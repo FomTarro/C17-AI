@@ -55,12 +55,14 @@ function getMoveActions(ourMon, theirMon){
 function getSwitchActions(ourMons, theirMon){
 	var posActions = [];
 	
-	for(var i = 0; i < ourMons.length; i++){
-		var newAction = new action();
-		newAction.action = 'switch';
-		newAction.value = getMoveActions(ourMons[i], theirMon)[0].value;
-		newAction.index = i;
-		posActions.push(newAction);
+	for(var i = 1; i < ourMons.length; i++){
+		if(ourMons[i].currentHP > 0){
+			var newAction = new action();
+			newAction.action = 'switch';
+			newAction.value = getMoveActions(ourMons[i], theirMon)[0].value;
+			newAction.index = i;
+			posActions.push(newAction);
+		}
 	}
 	
 	return posActions;
