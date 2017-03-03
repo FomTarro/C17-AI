@@ -1,5 +1,6 @@
 var aMonMove = require('./move');
 var MoveData = require('./PokeClient/moves').BattleMovedex;
+var action = require('./action');
 var move;
 var bestIndividualMove;
 var bestTeamMove;
@@ -13,17 +14,6 @@ function QueryMove(aMove) {
 	//console.log(MoveData[aMove]);
 	return MoveData[aMove];
 }
-
-// function getMovePower(aMove)
-// {
-// 	//console.log("RETRIEVING MOVE POWER");
-// 	if (aMove.includes("60"))
-// 	    {
-// 	    	aMove = aMove.substring(0, aMove.indexOf("60"));
-// 	    }
-// 	//console.log(MoveData[aMove].basePower);
-// 	return MoveData[aMove].basePower;
-// }
 
 function getMoveType(aMove) {
 	//console.log("RETRIEVING MOVE TYPE");
@@ -44,6 +34,36 @@ function getRandomInt(min, max) {
 
 function getIsSwitch() {
 	return isSwitch;
+}
+
+//Returns a list of move actions
+function getMoveActions(ourMon, theirMon){
+	var maxExpDamage = inDamage(ourMon, theirMon);
+	var posActions = [];
+	
+	for(var i = 0; i < ourMon.moves.length; i++){
+		var newAction = new action();
+		newAction.value = ((isFaster(ourMon, theirMon) * outDamage(ourMon.moves[i], theirMon)) * theirMon.currentHP) - (maxExpDamage * ourMon.currentHP);
+		newAction.index = i;
+		posActions.push(newAction);
+	}
+	
+	return posActions;
+}
+
+//Returns a list of switch actions
+function getMoveActions(ourMons, theirMon){
+	var posActions = [];
+	
+	for(var i = 0; i < ourMons.length; i++){
+		var newAction = new action();
+		newAction.action = 'switch';
+		newAction.value = getMoveActions(ourMons[i], theirMon)[0].value;
+		newAction.index = i;
+		posActions.push(newAction);
+	}
+	
+	return posActions;
 }
 
 //Returns 1 if pokemonA is faster than pokemonB
@@ -82,7 +102,31 @@ function outDamage(move, target){
 
 }
 
-//function inDamage
+//Returns the amount of damage expect ourMon to take from target
+function inDamage(ourMon, target){
+	var mostDamage = 0;
+	
+	//find the most damaging move from the moves we know
+	for(var i = 0; i < target.moves.length; i++){
+		var thisDamage = outDamage(target.moves[i], ourMon);
+		
+		if(thisDamage > mostDamage)
+			mostDamage = thisDamage;
+	}
+	
+	//if we don't know all the moves then assume the worst from the possible moves and known moves
+	if(target.moves.length < 4){
+		for(var i = 0; i < target.posMoves.length; i++){
+			var thisDamage = outDamage(target.posMoves[i], ourMon);
+		
+			if(thisDamage > mostDamage)
+				mostDamage = thisDamage;
+		}
+	}
+	
+	return mostDamage;
+	
+}
 
 /* An algorithm that chooses an action to take based on the supereffectiveness of the move
  *  on the enemy pokemon.
@@ -438,6 +482,7 @@ var PoketronAlgorithm = function() {
 	this.BestIsBad = BestIsBad;
 	this.SmartSwitch = SmartSwitch;
 	this.EscapeStrongMove = EscapeStrongMove;
+	this.getMoveActions = getMoveActions;
 	return this;
 };
 
