@@ -271,7 +271,46 @@ _client.on('battle:request', function(event){
 	    }
 	    
 	    console.log("Make Decision");
-	    
+	    var movesActions= Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon).getMoveActions();
+	    var switchActions = Algorithm.PrioritizeSuperEffective(_ourActiveMon, _ourTeam, _theirActiveMon).getSwitchActions();
+	    var list_actions.concat(moveActions);
+	    list_actions.concat(switchActions);
+	    var bestAction;
+	    var chosenAction;
+	    var picked = false;
+	    var counter = 0;
+
+	    // sort in ascending order by the best heuristic
+	    list_actions = list_actions.sort(function(a, b) {
+		return a.value - b.value;
+	    });
+	    // now flip the list
+	    list_actions = list_actions.reverse();
+
+	    while (picked == false)
+	    {
+		// our top of the list is now our current best action
+		bestAction = list_actions[counter];
+
+		// now check that the action is a move or a switch
+		if (bestAction.action = 'move')
+		{
+		  // if it's a move action, check that it is viable
+		  if (_ourActiveMon.moves[bestAction.index].pp > 0 && _ourActiveMon.moves[bestAction.index].disabled != true)
+		  {
+		    chosenAction = bestAction;
+		    picked = true;
+		  }
+		}
+		// assume all switches are viable
+		else
+		{
+		  chosenAction = bestAction;
+		  picked = true;
+		}
+		counter++;
+	      }
+	      _client.send('/choose ' + chosenAction.action + ' ' + (chosenAction.index + 1) + '|' + _reqNum, event.room)
 	    
 	    if(event.data.wait != undefined && event.data.wait == true){
 	    	_client.send("Hahaha, your Pokemon are weak!", event.room);
