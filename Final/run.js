@@ -258,6 +258,19 @@ _client.on('battle:request', function(event){
 				}
 		    }
 	    }
+	    
+	    
+			if (LastMon()) {
+				if (forceSwitch)
+					_client.send("Well... This sucks...", event.room);
+					
+				if(event.data.active != undefined)
+					forceSwitch = false;
+			}
+			
+			if(event.data.wait != undefined && event.data.wait == true)
+				forceSwitch = false;
+
 	
 	    if(forceSwitch){
 	      // pick a team member at random until we select one that has not fainted
@@ -346,8 +359,10 @@ _client.on('battle:move', function(event){
       Re-evaluate estimates here.
     */
     for(var key in _theirTeam){
-    	if(key == _theirTeam[user].species && !_theirTeam[user].moves.includes(event.data.move)){
-    		_theirTeam[user].moves.push(event.data.move);
+    	if(_theirTeam[user] == undefined){
+	    	if(key == _theirTeam[user].species && !_theirTeam[user].moves.includes(event.data.move)){
+	    		_theirTeam[user].moves.push(event.data.move);
+	    	}
     	}
     }
   }

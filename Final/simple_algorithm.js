@@ -347,7 +347,7 @@ function EscapeStrongMove(currWeaknesses, enemyPokem) {
 	
 	for(var i = 0; i < enemyPokem.moves.length; i ++){
 		console.log("MOVE IN Q: " + enemyPokem.moves[i].toLowerCase().split(' ').join(''));
-		var theMove = enemyPokem.moves[i].toLowerCase().split(' ').join('').replace(/<(-)*?>/gm, '');
+		var theMove = enemyPokem.moves[i].toLowerCase().split(' ').join('').replace(/-/gm, '');
 		console.log("MOVE IN Q: " + theMove);
 		var moveType = QueryMove(theMove).type;
 		
