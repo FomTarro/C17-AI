@@ -69,7 +69,7 @@ _client.on('chat:public', function(event) {
 
 // A chat command has given us back information in HTML format. Joy!
 _client.on('chat:html', function(event) {
-  //console.log(event.data)
+  console.log(event.data)
   if(event.data.includes("Weaknesses")){
 
     var str = event.data.split('<div>')[1];
@@ -146,11 +146,21 @@ _client.on('chat:html', function(event) {
     setTimeout(sayweak, 2000, event);
     
     function sayweak(event){
-    	curWeaknesses = [];
+    	
+
+			for (var i = 0; i < _ourTeam.length; i++) {
+				if (effectivenessJSON.species.toLowerCase().includes(_ourTeam[i].species.toLowerCase())) {
+					_ourTeam[i].weaknesses = effectivenessJSON.weaknesses;
+					_ourTeam[i].resistances = effectivenessJSON.resistances;
+					_ourTeam[i].immunities = effectivenessJSON.immunities;
+				}
+			}
+
+    	/*curWeaknesses = [];
 	    if (effectivenessJSON.species.toLowerCase().includes(_ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')).toLowerCase())) {
 			console.log("Our Weaknesses Gathered: " + JSON.stringify(effectivenessJSON.weaknesses));
 			curWeaknesses = effectivenessJSON.weaknesses;
-		}
+		}*/
 	}
 
   }
@@ -218,24 +228,29 @@ _client.on('battle:request', function(event){
 
     // update our team
     for(var i = 0; i < event.data.side.pokemon.length; i++){
-      _ourTeam[i] = event.data.side.pokemon[i];
-      //console.log(JSON.stringify(_ourTeam[i]));
+    	console.log(JSON.stringify(event.data.side.pokemon[i]));
+      _ourTeam[i] = SetMon(event.data.side.pokemon[i]);
+      _client.send("/weakness " + _ourTeam[i].species, event.room);
+      
     }
 
     // cycle through list to find which of our guys is active
-    for(var i = 0; i < _ourTeam.length; i++){
+    /*for(var i = 0; i < _ourTeam.length; i++){
       if(_ourTeam[i].active == true){
         _ourActiveMon = _ourTeam[i];
         break;
       }
-    }
-    console.log("OUR POKEMON: " + _ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')));
+    }*/
+   
+   _ourActiveMon = _ourTeam[0];
+   
+    console.log("OUR POKEMON: " + _ourActiveMon.species);
     console.log("THEIR POKEMON: " + _theirActiveMon.species + "\n");
 
     var response = '';
     var forceSwitch = (event.data.forceSwitch != undefined && event.data.forceSwitch.includes(true));
     
-    _client.send("/weakness " + _ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')), event.room);
+    //_client.send("/weakness " + _ourActiveMon.details.substring(0, _ourActiveMon.details.indexOf(',')), event.room);
     
     setTimeout(chooseAction, 4000, event);
     function chooseAction(event){
@@ -251,6 +266,39 @@ _client.on('battle:request', function(event){
 	    	console.log("Possible Moves: " + _theirActiveMon.posMoves.join(', '));
 	    }
 	
+	    
+	    
+	    console.log("Make Decision");
+	    /*var ourActiveMon = SetMon(_ourActiveMon);
+	    var ourTeam = [new mon(), new mon(), new mon(),
+			  new mon(), new mon(), new mon()];
+	    for (var i = 0; i < _ourTeam.length; i++)
+	    {
+		    ourTeam[i] = SetMon(_ourTeam[i]);
+	    }*/
+	    
+	    console.log("Our active mon moves: " + _ourActiveMon.moves);
+	    
+	    var movesActions= Algorithm.getMoveActions(_ourActiveMon, _theirActiveMon);
+	    var switchActions = Algorithm.getSwitchActions(_ourTeam, _theirActiveMon);
+	    var list_actions = [];
+	    list_actions = movesActions;
+	    list_actions.concat(switchActions);
+	    	    console.log("the list actinos object");
+	    console.log(list_actions);
+	    var bestAction;
+	    var chosenAction;
+	    var picked = false;
+	    var counter = 0;
+		var possibleMoves;
+		
+	    // sort in ascending order by the best heuristic
+	    list_actions = list_actions.sort(function(a, b) {
+		return a.value - b.value;
+	    });
+	    // now flip the list
+	    list_actions = list_actions.reverse();
+	    
 	    if(forceSwitch){
 	    	var breakOut = 100;
 	      // pick a team member at random until we select one that has not fainted
@@ -259,7 +307,7 @@ _client.on('battle:request', function(event){
 	      		console.log("BREAKOUTXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	      		break;
 	      	}
-	        var switchChoice = Algorithm.SmartSwitch(_ourTeam, _theirActiveMon);
+	        var switchChoice = Algorithm.SmartSwitch(_ourTeam, _theirActiveMon);////////TRIGGERED STAEMENT FRURUFJIDND JDJF
 	        breakOut--;
 	      }while(_ourTeam[switchChoice].condition.includes('fnt') || _ourTeam[switchChoice].active == true)
 	      
@@ -269,43 +317,22 @@ _client.on('battle:request', function(event){
 	      	return -1;
 	      }
 	    }
-	    
-	    console.log("Make Decision");
-	    var ourActiveMon = SetMon(_ourActiveMon);
-	    var ourTeam = [new mon(), new mon(), new mon(),
-			  new mon(), new mon(), new mon()];
-	    for (var i = 0; i < _ourTeam.length; i++)
-	    {
-		    ourTeam[i] = SetMon(_ourTeam[i]);
-	    }
-	    
-	    var movesActions= Algorithm.getMoveActions(ourActiveMon, _theirActiveMon);
-	    var switchActions = Algorithm.getSwitchActions(ourTeam, _theirActiveMon);
-	    var list_actions = [];
-	    list_actions.concat(moveActions);
-	    list_actions.concat(switchActions);
-	    var bestAction;
-	    var chosenAction;
-	    var picked = false;
-	    var counter = 0;
-
-	    // sort in ascending order by the best heuristic
-	    list_actions = list_actions.sort(function(a, b) {
-		return a.value - b.value;
-	    });
-	    // now flip the list
-	    list_actions = list_actions.reverse();
 
 	    while (picked == false)
 	    {
+	    	possibleMoves = event.data.active[counter].moves
 		// our top of the list is now our current best action
 		bestAction = list_actions[counter];
-
-		// now check that the action is a move or a switch
-		if (bestAction.action = 'move')
+		// console.log('list of actions at counter:');
+		// console.log(list_actions[counter]);
+// 
+		// console.log("best action:");
+		// console.log(bestAction);
+		// // now check that the action is a move or a switch
+		if (bestAction.action == 'move')
 		{
 		  // if it's a move action, check that it is viable
-		  if (_ourActiveMon.moves[bestAction.index].pp > 0 && _ourActiveMon.moves[bestAction.index].disabled != true)
+		  if (possibleMoves[bestAction.index].pp > 0 && possibleMoves[bestAction.index].disabled != true)
 		  {
 		    chosenAction = bestAction;
 		    picked = true;
@@ -321,7 +348,7 @@ _client.on('battle:request', function(event){
 	      }
 	      _client.send('/choose ' + chosenAction.action + ' ' + (chosenAction.index + 1) + '|' + _reqNum, event.room)
 	    
-	    if(event.data.wait != undefined && event.data.wait == true){
+	    /*if(event.data.wait != undefined && event.data.wait == true){
 	    	_client.send("Hahaha, your Pokemon are weak!", event.room);
 	    }
 	    else{
@@ -341,7 +368,7 @@ _client.on('battle:request', function(event){
 	      _ourLastMove = move;
 	    }
 	
-	    _client.send(response, event.room)
+	    _client.send(response, event.room)*/
     };
   };
 
@@ -527,7 +554,7 @@ function LastMon(){
 	var numFnt = 0;
 	
 	for(var i = 0; i < 6; i++){
-		if(_ourTeam[i].condition.includes('fnt'))
+		if(_ourTeam[i].currentHP == 0)
 			numFnt++;
 	}
 	
@@ -540,16 +567,21 @@ function LastMon(){
 function SetMon(aMon)
 {
 	var storeMonInfo = new mon();
-	    storeMonInfo.species = aMon.species;
-	    storeMonInfo.currentHP = aMon.currentHP;
+	    storeMonInfo.species = aMon.details.substring(0, aMon.details.indexOf(','));
+	    storeMonInfo.currentHP = parseInt(aMon.condition.split('/')[0]) / parseInt(aMon.condition.split('/')[1]);
 	    storeMonInfo.maxHP = aMon.maxHP;
 	    storeMonInfo.status = aMon.status;
 	    storeMonInfo.stats = aMon.stats;
 	    storeMonInfo.ability = aMon.ability;
 	    storeMonInfo.item = aMon.item;
-	    storeMonInfo.moves = aMon.moves;
-	    storeMonInfo.weaknesses = aMon.weaknesses;
-	    storeMonInfo.resistances = aMon.resistances;
+	    console.log("aMon moves type: " + typeof(aMon.moves));
+	    storeMonInfo.moves[0] = aMon.moves[0];
+	    storeMonInfo.moves[1] = aMon.moves[1];
+	    storeMonInfo.moves[2] = aMon.moves[2];
+	    storeMonInfo.moves[3] = aMon.moves[3];
+	    console.log("aMon info stored: "+ storeMonInfo.moves);
+	    //storeMonInfo.weaknesses = aMon.weaknesses;
+	    //storeMonInfo.resistances = aMon.resistances;
 	    storeMonInfo.posMoves = aMon.posMoves;
 	return storeMonInfo;
 }
