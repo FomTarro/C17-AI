@@ -309,7 +309,7 @@ _client.on('battle:request', function(event){
 	      	}
 	        var switchChoice = Algorithm.SmartSwitch(_ourTeam, _theirActiveMon);////////TRIGGERED STAEMENT FRURUFJIDND JDJF
 	        breakOut--;
-	      }while(_ourTeam[switchChoice].condition.includes('fnt') || _ourTeam[switchChoice].active == true)
+	      }while(_ourTeam[switchChoice].status == 'fnt' || _ourTeam[switchChoice].active == true)
 	      
 	      if(breakOut >= 0){
 	      	response = '/choose switch ' + (switchChoice+1)  + '|'+ _reqNum;
