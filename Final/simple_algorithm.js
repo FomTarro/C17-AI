@@ -380,7 +380,7 @@
 	
 		//look for a mon with a super effective move
 		for (var i = 0; i < 6; i++) {
-			if (!ourPokes[i].condition.includes('fnt')) {
+			if (!ourPokes[i].status == 'fnt') {
 				var moveType = getMoveType(ourPokes[i].moves[searchMoves(ourPokes[i].moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE)[0]]);
 				for (var j = 0; j < enemyWeaknesses.length; j++) {
 					if (enemyWeaknesses[j].type.includes(moveType)) {
@@ -392,7 +392,7 @@
 	
 		//look for a mon that has a move that isnt weak against the opponent
 		for (var i = 0; i < 6; i++) {
-			if (!ourPokes[i].condition.includes('fnt')) {
+			if (!ourPokes[i].status == 'fnt') {
 				var moveType = getMoveType(ourPokes[i].moves[searchMoves(ourPokes[i].moves, enemyWeaknesses, enemyResistances, enemyImmunities, isTeam, LEVEL_EFFECTIVE)[0]]);
 				for (var j = 0; j < enemyResistances.length; j++) {
 					if (!enemyResistances[j].type.includes(moveType)) {
